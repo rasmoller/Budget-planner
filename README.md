@@ -1,42 +1,42 @@
-# sv
+# Budget Planner
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A personal budget planning tool for tracking recurring income and expenses. Built with SvelteKit and deployed as a Cloudflare Worker. All data is stored locally in the browser via IndexedDB.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Multi-budget support** — Create and switch between multiple budgets (e.g., per household or scenario)
+- **Recurring items** — Track income and expenses with daily, weekly, monthly, or yearly frequencies, normalized to monthly equivalents
+- **Categories** — Organize items into color-coded categories with drag-and-drop reordering
+- **Dashboard** — Monthly overview with income/expense summaries and expandable category sections
+- **Year & month overview** — Drill-down view with per-category and per-item breakdowns across all months
+- **Charts** — Custom nested donut chart visualizing category-level income vs. expense splits
+- **Export / Import** — Export budgets as JSON or CSV; import JSON backups
+- **Dark mode** — Automatic dark mode via `prefers-color-scheme`
+- **Bilingual** — Danish and English language support
+
+## Tech Stack
+
+- [SvelteKit](https://kit.svelte.dev/) + [Svelte 5](https://svelte.dev/) (runes mode)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [Dexie](https://dexie.org/) (IndexedDB wrapper)
+- [Cloudflare Workers](https://workers.cloudflare.com/) (deployment)
+- TypeScript
+
+## Getting Started
 
 ```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.16.5 create --template minimal --types ts --no-install budget-planner
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+The app opens at `http://localhost:5173`.
 
-To create a production version of your app:
+## Scripts
 
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Build and preview locally via Wrangler |
+| `npm run check` | Run type checking |
+| `npm run deploy` | Build and deploy to Cloudflare |

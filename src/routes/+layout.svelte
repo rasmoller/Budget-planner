@@ -225,6 +225,15 @@
 				>
 					{$t.nav.overview}
 				</a>
+				<a
+					href="/charts"
+					class="btn-header
+						{currentPath === '/charts'
+							? '!bg-white !text-[var(--color-header)]'
+							: ''}"
+				>
+					{$t.nav.charts}
+				</a>
 				<div class="flex rounded-lg overflow-hidden border border-white/25">
 					<button
 						onclick={() => switchLanguage('da')}
@@ -284,7 +293,7 @@
 		</div>
 		<div class="space-y-2 max-h-64 overflow-y-auto">
 			{#each $allBudgets as b}
-				<div class="flex items-center justify-between p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-border)]/30 transition-colors">
+				<div class="budget-row flex items-center justify-between p-3 rounded-lg border border-[var(--color-border)] transition-colors">
 					<button onclick={() => switchBudget(b.id)} class="flex-1 text-left">
 						<span class="font-medium">{$budget?.id === b.id ? '▸ ' : ''}{b.name}</span>
 					</button>

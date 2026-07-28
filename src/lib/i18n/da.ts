@@ -5,6 +5,7 @@ export const da = {
     expenses: "Udgifter",
     incomes: "Indtægter",
     overview: "Overblik",
+    charts: "Grafer",
   },
   budget: {
     addExpense: "Tilføj udgift",

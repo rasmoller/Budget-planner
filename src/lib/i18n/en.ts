@@ -4,7 +4,8 @@ export const en = {
 		categories: 'Categories',
 		expenses: 'Expenses',
 		incomes: 'Incomes',
-		overview: 'Overview'
+		overview: 'Overview',
+		charts: 'Charts'
 	},
 	budget: {
 		addExpense: 'Add expense',

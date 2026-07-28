@@ -11,6 +11,7 @@ export interface Category {
 	budgetId: string;
 	name: string;
 	color: string;
+	order: number;
 	createdAt: Date;
 	updatedAt: Date;
 }

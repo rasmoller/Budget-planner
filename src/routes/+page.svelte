@@ -39,6 +39,11 @@
 
 	let expandedCategories = $state(new Set<string>());
 
+	let draggedCategoryId = $state<string | null>(null);
+	let displayOrder = $state<string[]>([]);
+	let originalOrder = $state<string[]>([]);
+	let isDragging = $state(false);
+
 	const defaultColors = [
 		'#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f97316',
 		'#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'
@@ -169,7 +174,72 @@
 	}
 
 	function sortCategories(groups: CategoryGroup[]): CategoryGroup[] {
-		return [...groups].sort((a, b) => a.categoryName.localeCompare(b.categoryName, 'da'));
+		if (isDragging && displayOrder.length > 0) {
+			const groupMap = new Map(groups.map((g) => [g.categoryId, g]));
+			return displayOrder
+				.filter((id) => groupMap.has(id))
+				.map((id) => groupMap.get(id)!);
+		}
+		const catOrder = new Map($categories.map((c) => [c.id, c.order]));
+		return [...groups].sort((a, b) => {
+			const orderA = catOrder.get(a.categoryId) ?? 0;
+			const orderB = catOrder.get(b.categoryId) ?? 0;
+			return orderA - orderB;
+		});
+	}
+
+	function handleDragStart(e: DragEvent, categoryId: string) {
+		draggedCategoryId = categoryId;
+		isDragging = true;
+		const currentGroups = sortCategories(allCategoryGroups());
+		const ids = currentGroups.map((g) => g.categoryId);
+		displayOrder = [...ids];
+		originalOrder = [...ids];
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', categoryId);
+		}
+	}
+
+	function handleDragOver(e: DragEvent, categoryId: string) {
+		e.preventDefault();
+		if (!draggedCategoryId || draggedCategoryId === categoryId || !isDragging) return;
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = 'move';
+		}
+		const fromIndex = displayOrder.indexOf(draggedCategoryId);
+		const toIndex = displayOrder.indexOf(categoryId);
+		if (fromIndex === -1 || toIndex === -1) return;
+		const newOrder = [...displayOrder];
+		newOrder.splice(fromIndex, 1);
+		newOrder.splice(toIndex, 0, draggedCategoryId);
+		displayOrder = newOrder;
+	}
+
+	function handleDragLeave(_e: DragEvent, categoryId: string) {
+		if (draggedCategoryId === categoryId) {
+			return;
+		}
+	}
+
+	async function handleDrop(e: DragEvent, _targetCategoryId: string) {
+		e.preventDefault();
+		if (!draggedCategoryId) return;
+		await categories.reorder(displayOrder);
+		draggedCategoryId = null;
+		isDragging = false;
+		displayOrder = [];
+		originalOrder = [];
+	}
+
+	function handleDragEnd() {
+		if (isDragging && draggedCategoryId) {
+			displayOrder = [...originalOrder];
+		}
+		draggedCategoryId = null;
+		isDragging = false;
+		displayOrder = [];
+		originalOrder = [];
 	}
 </script>
 
@@ -209,11 +279,29 @@
 				{@const isExpanded = expandedCategories.has(group.categoryId)}
 				{@const incItems = getItemsOfType(group, 'income')}
 				{@const expItems = getItemsOfType(group, 'expense')}
-				<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+				<div
+					class="category-row rounded-lg border bg-[var(--color-surface)] transition-opacity {draggedCategoryId === group.categoryId ? 'opacity-40' : 'border-[var(--color-border)]'}"
+					role="listitem"
+					ondragover={(e) => handleDragOver(e, group.categoryId)}
+					ondragleave={(e) => handleDragLeave(e, group.categoryId)}
+					ondrop={(e) => handleDrop(e, group.categoryId)}
+				>
 					<div class="flex items-center w-full">
+					<div
+						class="cursor-grab active:cursor-grabbing px-2 text-gray-400 hover:text-gray-600 transition-colors"
+						role="button"
+						tabindex="-1"
+						draggable="true"
+						ondragstart={(e) => handleDragStart(e, group.categoryId)}
+						ondragend={handleDragEnd}
+					>
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+								<path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+							</svg>
+						</div>
 						<button
 							onclick={() => toggleCategory(group.categoryId)}
-							class="flex-1 flex items-center justify-between p-4 text-left hover:bg-[var(--color-border)]/30 rounded-l-lg transition-colors"
+							class="flex-1 flex items-center justify-between p-4 text-left rounded-l-lg transition-colors"
 						>
 							<div class="flex items-center gap-3">
 								<span class="text-gray-400 text-xs">{isExpanded ? '▼' : '▶'}</span>
@@ -231,7 +319,7 @@
 						</button>
 					<button
 						onclick={() => openEditCategory(group.categoryId, group.categoryName, group.categoryColor)}
-						class="btn-icon"
+						class="btn-icon mr-2"
 						aria-label="Rediger kategori"
 					>
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
