@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { CategoryGroup } from '$lib/types';
-	import { formatDKK } from '$lib/utils/currency';
+	import type { CategoryGroup, Currency } from '$lib/types';
+	import { formatCurrency } from '$lib/utils/currency';
 
-	let { groups }: { groups: CategoryGroup[] } = $props();
+	let { groups, currency = 'DKK' as Currency }: { groups: CategoryGroup[]; currency?: Currency } = $props();
 
 	const size = 320;
 	const cx = size / 2;
@@ -188,14 +188,14 @@
 					{hovered.ring === 'inner' ? 'Kategori' : hovered.type === 'income' ? 'Indtægt' : 'Udgift'}
 				</text>
 				<text x={cx} y={cy + 20} text-anchor="middle" class="fill-[var(--color-text)] text-sm font-bold">
-					{formatDKK(hovered.amount)}
+					{formatCurrency(hovered.amount, currency)}
 				</text>
 				<text x={cx} y={cy + 34} text-anchor="middle" class="fill-gray-400 text-[10px]">
 					{hovered.percent.toFixed(1)}%
 				</text>
 			{:else}
-				<text x={cx} y={cy - 4} text-anchor="middle" class="fill-[var(--color-text)] text-lg font-bold">
-					{formatDKK(grandTotal)}
+		<text x={cx} y={cy - 4} text-anchor="middle" class="fill-[var(--color-text)] text-lg font-bold">
+				{formatCurrency(grandTotal, currency)}
 				</text>
 				<text x={cx} y={cy + 14} text-anchor="middle" class="fill-gray-400 text-[10px]">
 					total / md
