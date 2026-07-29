@@ -1,0 +1,82 @@
+# Roadmap
+
+> **Legend:** ✅ Done · 🚧 In progress · 📋 Planned · 💡 Future idea
+
+---
+
+## Phase 1 — Core Features (✅ Complete)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Multi-budget CRUD (create, switch, duplicate, archive, unarchive, delete) | ✅ | Cascade delete for categories + items |
+| Categories (add, update, delete, duplicate, reorder) | ✅ | Drag-and-drop reordering |
+| Recurring items (add, update, delete, duplicate) | ✅ | Daily/weekly/monthly/yearly frequencies |
+| Overview page (year view) | ✅ | Summary cards + expandable category/items drill-down |
+| Overview page (month view) | ✅ | Month navigation, per-category breakdown |
+| Charts page (nested donut) | ✅ | Custom SVG; needs rework (see charts-rework-plan) |
+| Currency formatting (DKK, EUR, USD, SEK, NOK) | ✅ | `Intl.NumberFormat`-based |
+| Currency conversion + display currency selector | ✅ | Exchange rates via Frankfurter API |
+| Export/Import (JSON/CSV) | ✅ | — |
+| Dark mode | ✅ | `prefers-color-scheme` |
+| Bilingual (DA/EN) | ✅ | Svelte store-based i18n |
+| Local IndexedDB storage | ✅ | Dexie with schema upgrades v1→v2→v3 |
+
+---
+
+## Phase 2 — Charts Rework (📋 Planned)
+
+See `docs/charts-rework-plan.md` for full details.
+
+1. Month/Year toggle on charts page
+2. Single-ring donut with income/expense sub-arcs
+3. Line chart (category spending over time)
+4. Two-column responsive page layout
+
+---
+
+## Phase 3 — High-Priority Features (📋 Planned)
+
+From `TODO.md` — **Must** priority:
+
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| **Search across income/expense** | Must | Search items across all categories |
+| **Category checkboxes in charts** | Must | Toggle categories on/off in chart for better comparison |
+| **One-time purchases** | Must | Single non-recurring expenses (e.g., a one-off purchase) |
+| **Future-dated changes** | Must | Schedule changes in advance (e.g., "in 3 months I switch from SU to dagpenge") |
+
+---
+
+## Phase 4 — Should-Have Features (💡 Planned)
+
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| **Variable post** | Should | Items with variable amounts (e.g., grocery budgets that change month-to-month) |
+
+---
+
+## Phase 5 — Future Ideas (💡 Future)
+
+From `charts-rework-plan.md`:
+
+- Customizable dashboard with widgets (add/remove/reorder)
+- Budget comparisons (2+ budgets side-by-side)
+- Date range filtering
+- Drill-down from charts into items
+
+---
+
+## Known Gaps & Potential Issues
+
+| Area | Issue |
+|------|-------|
+| **Test coverage** | ⚠️ 37 planned tests — see `docs/test-plan.md` |
+| **Exchange rates** | No error handling if the Frankfurter API is unreachable; `fetchExchangeRates` is called but failed requests are not handled |
+| **NestedDonut** | Current design is confusing (two-ring layout); empty-state handling unclear |
+| **Overview page** | The year/month `viewMode` toggle and month navigation logic is inline in the Svelte component — could be extracted |
+| **DB migrations** | Schema upgrades v1→v2→v3 exist but are untested |
+| **Charts page** | No month/year toggle yet; line chart not implemented |
+| **One-time purchases** | Schema has no `isOneTime` or `date` field for one-off items |
+| **Future-dated changes** | No mechanism for scheduling future start-date/amount changes |
+| **Variable amounts** | No `min`/`max` or `estimated` field on items |
+| **Search** | No search/filter UI for items |
