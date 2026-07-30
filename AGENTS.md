@@ -23,3 +23,8 @@ When starting a new session, always:
 2. Write missing tests (see test-plan)
 3. Implement planned features (see roadmap / TODO.md)
 4. Propose new features only after the above is exhausted
+
+## i18n Rules
+
+- All user-visible text must go through `$t.*` from `$lib/i18n` — never hardcode display strings.
+- Code identifiers, logs, comments, and internal values can stay in English.

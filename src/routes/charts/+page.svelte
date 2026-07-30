@@ -86,19 +86,19 @@
 
 	<div class="grid grid-cols-3 gap-4">
 		<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.totalIncome}</p>
+			<p class="text-sm text-gray-500">{$t.summary.totalIncome}</p>
 			<p class="text-xl font-bold" style="color: var(--color-income)">
 				{fmt(totalIncome)}
 			</p>
 		</div>
 		<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.totalExpenses}</p>
+			<p class="text-sm text-gray-500">{$t.summary.totalExpenses}</p>
 			<p class="text-xl font-bold" style="color: var(--color-expense)">
 				{fmt(totalExpenses)}
 			</p>
 		</div>
 		<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.balance}</p>
+			<p class="text-sm text-gray-500">{$t.summary.balance}</p>
 			<p class="text-xl font-bold" style="color: {balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">
 				{fmt(balance)}
 			</p>
@@ -112,10 +112,10 @@
 
 		<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
 			<div class="grid grid-cols-4 gap-2 p-3 text-xs font-medium text-gray-500">
-				<span>{$t.budget.category}</span>
-				<span class="text-right">{$t.budget.totalIncome}</span>
-				<span class="text-right">{$t.budget.totalExpenses}</span>
-				<span class="text-right">{$t.budget.balance}</span>
+				<span>{$t.field.category}</span>
+				<span class="text-right">{$t.summary.totalIncome}</span>
+				<span class="text-right">{$t.summary.totalExpenses}</span>
+				<span class="text-right">{$t.summary.balance}</span>
 			</div>
 			{#each monthSummary.categories as group (group.categoryId)}
 				<div class="grid grid-cols-4 gap-2 p-3 items-center">
@@ -137,7 +137,7 @@
 		</div>
 	{:else}
 		<div class="text-center py-12 text-gray-500">
-			{$t.budget.noItems}
+			{$t.entry.noItems}
 		</div>
 	{/if}
 </div>

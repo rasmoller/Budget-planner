@@ -12,6 +12,7 @@
 		isItemActiveInMonth
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
+	import SummaryCards from '$lib/components/SummaryCards.svelte';
 	import { UNCATEGORIZED } from '$lib/types';
 	import type { RecurringItem, CategoryGroup, Currency } from '$lib/types';
 	import { openAllBudgets } from '$lib/stores/dialogs';
@@ -88,7 +89,7 @@
 	}
 
 	function getFrequencyShort(freq: string): string {
-		return { daily: '/dag', weekly: '/uge', monthly: '/md', yearly: '/år' }[freq] || '';
+		return { daily: $t.common.perDay, weekly: $t.common.perWeek, monthly: $t.common.perMonth, yearly: $t.common.perYear }[freq] || '';
 	}
 
 	function openAddCategory() {
@@ -337,7 +338,7 @@
 				onclick={openAddCategory}
 				class="btn-pill"
 			>
-				+ {$t.budget.addCategory}
+				+ {$t.category.addCategory}
 			</button>
 		</div>
 
@@ -389,8 +390,8 @@
 						<button
 							onclick={() => handleDuplicateCategory(group.categoryId)}
 							class="btn-icon"
-							aria-label="{$t.budget.duplicateCategory}"
-							title="{$t.budget.duplicateCategory}"
+							aria-label="{$t.category.duplicateCategory}"
+							title="{$t.category.duplicateCategory}"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
 								<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
@@ -400,7 +401,7 @@
 						<button
 							onclick={() => openEditCategory(group.categoryId, group.categoryName, group.categoryColor)}
 							class="btn-icon"
-							aria-label="Rediger kategori"
+							aria-label={$t.category.editCategory}
 						>
 								<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
 									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -413,7 +414,7 @@
 						<div class="border-t border-[var(--color-border)]">
 							{#if incItems.length > 0}
 								<div class="px-4 pt-3 pb-1">
-									<p class="text-xs font-semibold mb-2" style="color: var(--color-income)">{$t.budget.totalIncome}</p>
+									<p class="text-xs font-semibold mb-2" style="color: var(--color-income)">{$t.summary.totalIncome}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each incItems as item}
 											<div class="flex items-center justify-between py-2">
@@ -425,8 +426,8 @@
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
 														class="btn-icon p-1"
-														aria-label="{$t.budget.duplicateItem}"
-														title="{$t.budget.duplicateItem}"
+														aria-label="{$t.entry.duplicateItem}"
+														title="{$t.entry.duplicateItem}"
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
@@ -436,7 +437,7 @@
 													<button
 														onclick={() => openEditItem(item)}
 														class="btn-icon p-1"
-														aria-label="Rediger"
+														aria-label={$t.common.edit}
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -451,7 +452,7 @@
 
 							{#if expItems.length > 0}
 								<div class="px-4 pt-3 pb-1">
-									<p class="text-xs font-semibold mb-2" style="color: var(--color-expense)">{$t.budget.totalExpenses}</p>
+									<p class="text-xs font-semibold mb-2" style="color: var(--color-expense)">{$t.summary.totalExpenses}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each expItems as item}
 											<div class="flex items-center justify-between py-2">
@@ -463,8 +464,8 @@
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
 														class="btn-icon p-1"
-														aria-label="{$t.budget.duplicateItem}"
-														title="{$t.budget.duplicateItem}"
+														aria-label="{$t.entry.duplicateItem}"
+														title="{$t.entry.duplicateItem}"
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
@@ -474,7 +475,7 @@
 													<button
 														onclick={() => openEditItem(item)}
 														class="btn-icon p-1"
-														aria-label="Rediger"
+														aria-label={$t.common.edit}
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -492,13 +493,13 @@
 									onclick={() => openAddItem(group.categoryId, 'income')}
 									class="flex-1 btn-pill text-[var(--color-income)] hover:bg-[var(--color-income)]/10"
 								>
-									+ {$t.budget.income}
+									+ {$t.summary.income}
 								</button>
 								<button
 									onclick={() => openAddItem(group.categoryId, 'expense')}
 									class="flex-1 btn-pill text-[var(--color-expense)] hover:bg-[var(--color-expense)]/10"
 								>
-									+ {$t.budget.expense}
+									+ {$t.summary.expense}
 								</button>
 							</div>
 						</div>
@@ -507,51 +508,29 @@
 			{/each}
 		{:else if allDataLoaded}
 			<div class="text-center py-12 text-gray-500">
-				<p class="mb-3">{$t.budget.noCategories}</p>
-				<p>{$t.budget.createFirst}</p>
+				<p class="mb-3">{$t.category.noCategories}</p>
+				<p>{$t.category.createFirst}</p>
 			</div>
 		{/if}
 	</div>
 
 	{#if summary}
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.totalIncome}</p>
-				<p class="text-2xl font-bold" style="color: var(--color-income)">
-					{fmt(summary.totalIncome)}
-				</p>
-			</div>
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.totalExpenses}</p>
-				<p class="text-2xl font-bold" style="color: var(--color-expense)">
-					{fmt(summary.totalExpenses)}
-				</p>
-			</div>
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.balance}</p>
-				<p
-					class="text-2xl font-bold"
-					style="color: {summary.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}"
-				>
-					{fmt(summary.balance)}
-				</p>
-			</div>
-		</div>
+		<SummaryCards income={summary.totalIncome} expense={summary.totalExpenses} {fmt} />
 	{/if}
 </div>
 
 <dialog bind:this={catDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50 place-self-center">
 	<div class="p-6">
-		<h3 class="text-lg font-semibold mb-4">{editingCategoryId ? $t.budget.editCategory : $t.budget.addCategory}</h3>
+		<h3 class="text-lg font-semibold mb-4">{editingCategoryId ? $t.category.editCategory : $t.category.addCategory}</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleSaveCategory(); }} class="space-y-4">
 			<div>
-				<label for="bc-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
+				<label for="bc-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
 				<input
 					id="bc-name"
 					type="text"
 					bind:value={catFormName}
 					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)]"
-					placeholder="{$t.budget.newCategoryPlaceholder}"
+					placeholder="{$t.field.newCategoryPlaceholder}"
 					required
 				/>
 				{#if catFormErrors.name}
@@ -559,12 +538,12 @@
 				{/if}
 			</div>
 			<div>
-				<label for="bc-color" class="block text-sm font-medium mb-1">{$t.budget.color}</label>
+				<label for="bc-color" class="block text-sm font-medium mb-1">{$t.field.color}</label>
 				<div id="bc-color" class="flex gap-2 flex-wrap items-center">
 					{#each defaultColors as color}
 						<button
 							type="button"
-							aria-label="Farve {color}"
+							aria-label={$t.common.customColor + ' ' + color}
 							onclick={() => (catFormColor = color)}
 							class="w-7 h-7 rounded-full border-2 transition-transform {catFormColor === color
 								? 'border-[var(--color-text)] scale-110'
@@ -575,7 +554,7 @@
 					<label
 						for="bc-custom-color"
 						class="w-7 h-7 rounded-full border-2 border-dashed border-[var(--color-border)] cursor-pointer flex items-center justify-center text-[10px] text-gray-400 hover:border-[var(--color-text)] transition-colors"
-						title="Custom color"
+						title={$t.common.customColor}
 					>
 						+
 					</label>
@@ -589,13 +568,13 @@
 			</div>
 		<div class="flex justify-between pt-2">
 			{#if editingCategoryId}
-				<button type="button" onclick={() => { catDialog?.close(); openDeleteConfirm('category', editingCategoryId!, catFormName); }} class="btn-danger">{$t.budget.delete}</button>
+				<button type="button" onclick={() => { catDialog?.close(); openDeleteConfirm('category', editingCategoryId!, catFormName); }} class="btn-danger">{$t.common.delete}</button>
 			{:else}
 				<div></div>
 			{/if}
 			<div class="flex gap-2">
-				<button type="button" onclick={() => catDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+				<button type="button" onclick={() => catDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.common.save}</button>
 			</div>
 		</div>
 		</form>
@@ -606,8 +585,8 @@
 	<div class="p-6">
 		<h3 class="text-lg font-semibold mb-4">
 			{editingItemId
-				? (itemFormType === 'income' ? $t.budget.editIncome : $t.budget.editExpense)
-				: (itemFormType === 'income' ? $t.budget.addIncome : $t.budget.addExpense)
+				? (itemFormType === 'income' ? $t.entry.editIncome : $t.entry.editExpense)
+				: (itemFormType === 'income' ? $t.entry.addIncome : $t.entry.addExpense)
 			}
 		</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleSaveItem(); }} class="space-y-4">
@@ -620,7 +599,7 @@
 						: 'hover:bg-[var(--color-border)]/30'}"
 					style={itemFormType === 'income' ? 'background-color: var(--color-income)' : ''}
 				>
-					{$t.budget.income}
+					{$t.summary.income}
 				</button>
 				<button
 					type="button"
@@ -630,25 +609,25 @@
 						: 'hover:bg-[var(--color-border)]/30'}"
 					style={itemFormType === 'expense' ? 'background-color: var(--color-expense)' : ''}
 				>
-					{$t.budget.expense}
+					{$t.summary.expense}
 				</button>
 			</div>
 			<div>
-				<label for="bi-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
-				<input id="bi-name" type="text" bind:value={itemFormName} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" placeholder="f.eks. Netflix, Løn" required />
+				<label for="bi-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
+				<input id="bi-name" type="text" bind:value={itemFormName} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" placeholder={$t.field.notesPlaceholder} required />
 				{#if itemFormErrors.name}
 					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.name}</p>
 				{/if}
 			</div>
 			<div>
-				<label for="bi-amount" class="block text-sm font-medium mb-1">{$t.budget.amount}</label>
+				<label for="bi-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
 				<input id="bi-amount" type="number" bind:value={itemFormAmount} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" min="0" step="0.01" required />
 				{#if itemFormErrors.amount}
 					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.amount}</p>
 				{/if}
 			</div>
 			<div>
-				<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.budget.frequency}</label>
+				<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
 				<select id="bi-freq" bind:value={itemFormFrequency} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]">
 					<option value="daily">{$t.frequency.daily}</option>
 					<option value="weekly">{$t.frequency.weekly}</option>
@@ -657,24 +636,24 @@
 				</select>
 			</div>
 			<div>
-				<label for="bi-notes" class="block text-sm font-medium mb-1">{$t.budget.notes}</label>
+				<label for="bi-notes" class="block text-sm font-medium mb-1">{$t.field.notes}</label>
 				<textarea
 					id="bi-notes"
 					bind:value={itemFormNotes}
 					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
-					placeholder="{$t.budget.notesPlaceholder}"
+					placeholder="{$t.field.notesPlaceholder}"
 					rows="2"
 				></textarea>
 			</div>
 		<div class="flex justify-between pt-2">
 			{#if editingItemId}
-				<button type="button" onclick={() => { itemDialog?.close(); openDeleteConfirm('item', editingItemId!, itemFormName); }} class="btn-danger">{$t.budget.delete}</button>
+				<button type="button" onclick={() => { itemDialog?.close(); openDeleteConfirm('item', editingItemId!, itemFormName); }} class="btn-danger">{$t.common.delete}</button>
 			{:else}
 				<div></div>
 			{/if}
 			<div class="flex gap-2">
-				<button type="button" onclick={() => itemDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+				<button type="button" onclick={() => itemDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.common.save}</button>
 			</div>
 		</div>
 		</form>
@@ -683,14 +662,14 @@
 
 <dialog bind:this={deleteDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50 place-self-center">
 	<div class="p-6">
-		<h3 class="text-lg font-semibold mb-2">{$t.budget.confirmDelete}</h3>
+		<h3 class="text-lg font-semibold mb-2">{$t.common.confirmDelete}</h3>
 		{#if deleteTarget?.type === 'category'}
-			<p class="text-sm text-[var(--color-danger)] mb-2">{$t.budget.deleteCategoryWarning}</p>
+			<p class="text-sm text-[var(--color-danger)] mb-2">{$t.category.deleteCategoryWarning}</p>
 		{/if}
 		<p class="text-sm text-gray-500 mb-4">{deleteTarget?.name}</p>
 		<div class="flex justify-end gap-2">
-			<button onclick={() => deleteDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-			<button onclick={handleDelete} class="btn-danger">{$t.budget.delete}</button>
+			<button onclick={() => deleteDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+			<button onclick={handleDelete} class="btn-danger">{$t.common.delete}</button>
 		</div>
 	</div>
 </dialog>

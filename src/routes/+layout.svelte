@@ -183,19 +183,19 @@
 			return (converted / 100).toFixed(2).replace('.', ',');
 		};
 
-		const header = `Navn;Beløb;Valuta;Type;Kategori;Frekvens;Startdato;Aktiv`;
+		const header = $t.budget.csvHeader;
 		const rows = items.map((item) => {
 			const cat = catMap.get(item.categoryId);
 			const catName = cat ? cat.name : '';
 			const freqMap: Record<string, string> = {
-				daily: 'Dagligt',
-				weekly: 'Ugentligt',
-				monthly: 'Månedligt',
-				yearly: 'Årligt'
+				daily: $t.frequency.daily,
+				weekly: $t.frequency.weekly,
+				monthly: $t.frequency.monthly,
+				yearly: $t.frequency.yearly
 			};
 			const typeMap: Record<string, string> = {
-				income: 'Indtægt',
-				expense: 'Udgift'
+				income: $t.summary.income,
+				expense: $t.summary.expense
 			};
 			const startDate = item.startDate instanceof Date
 				? item.startDate.toISOString().split('T')[0]
@@ -209,7 +209,7 @@
 				escapeCSV(catName),
 				freqMap[item.frequency] || item.frequency,
 				startDate,
-				item.isActive ? 'Ja' : 'Nej'
+				item.isActive ? $t.budget.csvYes : $t.budget.csvNo
 			].join(';');
 		});
 
@@ -295,7 +295,7 @@
 						class="btn-header
 							{currentPath === '/' ? '!bg-white !text-[var(--color-header)]' : ''}"
 					>
-						Budget
+						{$t.nav.dashboard}
 					</a>
 				{/if}
 				<a
@@ -319,8 +319,8 @@
 				<button
 					onclick={toggleDarkMode}
 					class="btn-header px-2.5 py-1"
-					aria-label="{isDarkMode ? $t.budget.lightMode : $t.budget.darkMode}"
-					title="{isDarkMode ? $t.budget.lightMode : $t.budget.darkMode}"
+					aria-label="{isDarkMode ? $t.common.lightMode : $t.common.darkMode}"
+					title="{isDarkMode ? $t.common.lightMode : $t.common.darkMode}"
 				>
 					{#if isDarkMode}
 						<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -357,7 +357,7 @@
 	</main>
 
 	<footer class="border-t border-[var(--color-border)] py-4 text-center text-sm text-gray-500">
-		Budget Planner &copy; 2026
+		{$t.common.footerCredit}
 	</footer>
 </div>
 
@@ -366,8 +366,9 @@
 		<h3 class="text-lg font-semibold mb-4">{$t.budget.createBudget}</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleCreateBudget(); }}>
 			<div class="mb-4">
-				<label class="block text-sm font-medium mb-1">{$t.budget.name}</label>
+				<label for="budget-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
 				<input
+					id="budget-name"
 					type="text"
 					bind:value={newBudgetName}
 					class="w-full px-3 py-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text)]"
@@ -379,21 +380,22 @@
 				{/if}
 			</div>
 			<div class="mb-4">
-				<label class="block text-sm font-medium mb-1">{$t.budget.currency}</label>
+				<label for="budget-currency" class="block text-sm font-medium mb-1">{$t.field.currency}</label>
 				<select
+					id="budget-currency"
 					bind:value={newBudgetCurrency}
 					class="w-full px-3 py-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
 				>
-					<option value="DKK">DKK - Danske kroner</option>
-					<option value="EUR">EUR - Euro</option>
-					<option value="USD">USD - US Dollar</option>
-					<option value="SEK">SEK - Svenske kronor</option>
-					<option value="NOK">NOK - Norske kroner</option>
+					<option value="DKK">{$t.currency.DKK}</option>
+					<option value="EUR">{$t.currency.EUR}</option>
+					<option value="USD">{$t.currency.USD}</option>
+					<option value="SEK">{$t.currency.SEK}</option>
+					<option value="NOK">{$t.currency.NOK}</option>
 				</select>
 			</div>
 			<div class="flex justify-end gap-2">
-				<button type="button" onclick={() => budgetDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+				<button type="button" onclick={() => budgetDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.common.save}</button>
 			</div>
 		</form>
 	</div>
@@ -422,8 +424,8 @@
 							<button
 								onclick={() => handleDuplicateBudget(b.id)}
 								class="btn-icon"
-								aria-label="{$t.budget.duplicate}"
-								title="{$t.budget.duplicate}"
+								aria-label="{$t.common.duplicate}"
+								title="{$t.common.duplicate}"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
 									<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
@@ -443,7 +445,7 @@
 							<button
 								onclick={() => openDeleteBudget(b.id, b.name)}
 								class="btn-icon btn-icon-danger ml-1"
-								aria-label="Slet"
+								aria-label={$t.common.delete}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
 									<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -477,7 +479,7 @@
 							<button
 								onclick={() => openDeleteBudget(b.id, b.name)}
 								class="btn-icon btn-icon-danger ml-1"
-								aria-label="Slet"
+								aria-label={$t.common.delete}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
 									<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -491,19 +493,19 @@
 		<div class="flex justify-end gap-2 mt-4">
 			<button onclick={() => { exportTargetCurrency = $budget?.currency ?? 'DKK'; exportDialog?.showModal(); }} class="btn-primary">{$t.budget.export}</button>
 			<button onclick={handleImport} class="btn-outline">{$t.budget.import}</button>
-			<button onclick={() => allBudgetsDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
+			<button onclick={() => allBudgetsDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
 		</div>
 	</div>
 </dialog>
 
 <dialog bind:this={deleteBudgetDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50">
 	<div class="p-6">
-		<h3 class="text-lg font-semibold mb-2">{$t.budget.confirmDelete}</h3>
-		<p class="text-sm text-[var(--color-danger)] mb-2">{$t.budget.deleteBudgetWarning}</p>
+		<h3 class="text-lg font-semibold mb-2">{$t.common.confirmDelete}</h3>
+		<p class="text-sm text-[var(--color-danger)] mb-2">{$t.common.deleteBudgetWarning}</p>
 		<p class="text-sm text-gray-500 mb-4">{deleteBudgetTarget?.name}</p>
 		<div class="flex justify-end gap-2">
-			<button onclick={() => deleteBudgetDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-			<button onclick={handleDeleteBudget} class="btn-danger">{$t.budget.delete}</button>
+			<button onclick={() => deleteBudgetDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+			<button onclick={handleDeleteBudget} class="btn-danger">{$t.common.delete}</button>
 		</div>
 	</div>
 </dialog>
@@ -512,8 +514,8 @@
 	<div class="p-6">
 		<h3 class="text-lg font-semibold mb-4">{$t.budget.export}</h3>
 		<div class="mb-4">
-			<label class="block text-sm font-medium mb-1">{$t.budget.currency}</label>
-			<select bind:value={exportTargetCurrency} class="px-3 py-2 w-full border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm">
+			<label for="export-currency" class="block text-sm font-medium mb-1">{$t.field.currency}</label>
+			<select id="export-currency" bind:value={exportTargetCurrency} class="px-3 py-2 w-full border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm">
 				<option value="DKK">DKK</option>
 				<option value="EUR">EUR</option>
 				<option value="USD">USD</option>
@@ -532,7 +534,7 @@
 			</button>
 		</div>
 		<div class="flex justify-end mt-4">
-			<button onclick={() => exportDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
+			<button onclick={() => exportDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
 		</div>
 	</div>
 </dialog>

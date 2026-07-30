@@ -1,16 +1,17 @@
 <script lang="ts">
 	import type { CategoryGroup, Currency } from '$lib/types';
 	import { formatCurrency } from '$lib/utils/currency';
+  	import { t } from '$lib/i18n';
 
 	let { groups, currency = 'DKK' as Currency }: { groups: CategoryGroup[]; currency?: Currency } = $props();
 
 	const size = 320;
 	const cx = size / 2;
 	const cy = size / 2;
-	const outerR = 145;
-	const outerInnerR = 108;
+	const outerR = 150;
+	const outerInnerR = 110;
 	const innerR = 108;
-	const innerInnerR = 22;
+	const innerInnerR = 60;
 	const gapAngle = 0.025;
 
 	interface Slice {
@@ -27,7 +28,7 @@
 		path: string;
 		color: string;
 		label: string;
-		type: 'income' | 'expense';
+		type: 'incomes' | 'expenses';
 		amount: number;
 		percent: number;
 		ring: 'inner' | 'outer';
@@ -100,7 +101,7 @@
 						path,
 						color: s.color,
 						label: s.label,
-						type: 'income',
+						type: 'incomes',
 						amount: catTotal,
 						percent: grandTotal > 0 ? (catTotal / grandTotal) * 100 : 0,
 						ring: 'inner'
@@ -118,7 +119,7 @@
 						path,
 						color: s.color,
 						label: s.label,
-						type: 'income',
+						type: 'incomes',
 						amount: s.income,
 						percent: grandTotal > 0 ? (s.income / grandTotal) * 100 : 0,
 						ring: 'outer'
@@ -134,7 +135,7 @@
 						path,
 						color: s.color,
 						label: s.label,
-						type: 'expense',
+						type: 'expenses',
 						amount: s.expense,
 						percent: grandTotal > 0 ? (s.expense / grandTotal) * 100 : 0,
 						ring: 'outer'
@@ -167,7 +168,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center gap-4">
+<div class="flex flex-col flex-1 relative items-center gap-4">
 	<div class="relative">
 		<svg viewBox="0 0 {size} {size}" width={size} height={size}>
 			{#each renderSlices as slice}
@@ -185,7 +186,7 @@
 					{hovered.label}
 				</text>
 				<text x={cx} y={cy + 4} text-anchor="middle" class="fill-gray-400 text-[10px]">
-					{hovered.ring === 'inner' ? 'Kategori' : hovered.type === 'income' ? 'Indtægt' : 'Udgift'}
+					{hovered.ring === 'inner' ? $t.field.category : hovered.type === 'incomes' ? $t.summary.incomes : $t.summary.expense}
 				</text>
 				<text x={cx} y={cy + 20} text-anchor="middle" class="fill-[var(--color-text)] text-sm font-bold">
 					{formatCurrency(hovered.amount, currency)}
@@ -198,20 +199,20 @@
 				{formatCurrency(grandTotal, currency)}
 				</text>
 				<text x={cx} y={cy + 14} text-anchor="middle" class="fill-gray-400 text-[10px]">
-					total / md
+					{$t.chart.totalPerMonth}
 				</text>
 			{/if}
 		</svg>
-
-		<div class="absolute top-0 right-0 flex flex-col gap-1 text-[10px]">
-			<div class="flex items-center gap-1.5">
-				<div class="w-2 h-2 rounded-sm bg-gray-400"></div>
-				<span class="text-gray-500">Indre: Kategori</span>
-			</div>
-			<div class="flex items-center gap-1.5">
-				<div class="w-2 h-2 rounded-sm bg-gray-600"></div>
-				<span class="text-gray-500">Ydre: Indtægt / Udgift</span>
-			</div>
+		
+	</div>
+	<div class="absolute top-0 right-0 flex flex-col gap-1 text-[10px]">
+		<div class="flex items-center gap-1.5">
+			<div class="w-2 h-2 rounded-sm bg-gray-400"></div>
+			<span class="text-gray-500">{$t.chart.innerRing}</span>
+		</div>
+		<div class="flex items-center gap-1.5">
+			<div class="w-2 h-2 rounded-sm bg-gray-600"></div>
+			<span class="text-gray-500">{$t.chart.outerRing}</span>
 		</div>
 	</div>
 
