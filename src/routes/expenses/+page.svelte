@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { budget } from '$lib/stores/budget';
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
-	import { formatDKK } from '$lib/utils/currency';
+	import { formatCurrency } from '$lib/utils/currency';
 	import { getMonthlyAmount } from '$lib/utils/budget';
 	import { UNCATEGORIZED, isUncategorized } from '$lib/types';
-	import type { RecurringItem } from '$lib/types';
+	import type { RecurringItem, Currency } from '$lib/types';
+	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
+	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 
 	let showModal = $state(false);
 	let editingItem = $state<RecurringItem | null>(null);
@@ -14,7 +17,9 @@
 	let formFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
 	let formStartDate = $state(new Date().toISOString().split('T')[0]);
 	let formIsActive = $state(true);
+	let formNotes = $state('');
 	let showMoreOptions = $state(false);
+	let formErrors = $state<ValidationErrors>({});
 
 	const expenseItems = $derived($recurringItems.filter((i) => i.type === 'expense'));
 
@@ -26,6 +31,8 @@
 		formFrequency = 'monthly';
 		formStartDate = new Date().toISOString().split('T')[0];
 		formIsActive = true;
+		formNotes = '';
+		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
 	}
@@ -33,26 +40,34 @@
 	function openEditModal(item: RecurringItem) {
 		editingItem = item;
 		formName = item.name;
-		formAmount = item.amount;
+		formAmount = item.amountInCents / 100;
 		formCategoryId = item.categoryId;
 		formFrequency = item.frequency;
 		formStartDate = new Date(item.startDate).toISOString().split('T')[0];
 		formIsActive = item.isActive;
+		formNotes = item.notes ?? '';
+		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
 	}
 
 	async function handleSubmit() {
-		if (!formName.trim()) return;
+		const nameErr = validateName(formName);
+		const amountErr = validateAmount(formAmount);
+		formErrors = {};
+		if (nameErr) formErrors.name = nameErr;
+		if (amountErr) formErrors.amount = amountErr;
+		if (nameErr || amountErr) return;
 
 		const data = {
 			name: formName,
-			amount: formAmount,
+			amountInCents: Math.round(formAmount * 100),
 			categoryId: formCategoryId,
 			type: 'expense' as const,
 			frequency: formFrequency,
 			startDate: new Date(formStartDate),
-			isActive: formIsActive
+			isActive: formIsActive,
+			notes: formNotes || undefined
 		};
 
 		if (editingItem) {
@@ -67,6 +82,10 @@
 		if (confirm('Er du sikker på at du vil slette denne udgift?')) {
 			await recurringItems.remove(id);
 		}
+	}
+
+	async function handleDuplicate(id: string) {
+		await recurringItems.duplicate(id);
 	}
 
 	function getFrequencyLabel(freq: string): string {
@@ -86,6 +105,15 @@
 		const cat = $categories.find((c) => c.id === item.categoryId);
 		return { name: cat?.name || 'Ukendt', color: cat?.color || '#9ca3af' };
 	}
+
+	function fmt(amount: number): string {
+		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
+	}
+
+	if (typeof localStorage !== 'undefined') {
+		const saved = localStorage.getItem('displayCurrency');
+		if (saved && saved !== 'none') displayCurrency.set(saved as Currency);
+	}
 </script>
 
 <svelte:head>
@@ -95,12 +123,30 @@
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<h2 class="text-2xl font-bold">Udgifter</h2>
-		<button
-			onclick={openAddModal}
-			class="btn-primary"
-		>
-			Tilføj udgift
-		</button>
+		<div class="flex items-center gap-2">
+			<select
+				value={$displayCurrency ?? 'none'}
+				onchange={(e) => {
+					const val = (e.target as HTMLSelectElement).value;
+					displayCurrency.set(val === 'none' ? null : val as Currency);
+					localStorage.setItem('displayCurrency', val);
+				}}
+				class="px-2 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
+			>
+				<option value="none">Auto ({$budget?.currency ?? 'DKK'})</option>
+				<option value="DKK">DKK</option>
+				<option value="EUR">EUR</option>
+				<option value="USD">USD</option>
+				<option value="SEK">SEK</option>
+				<option value="NOK">NOK</option>
+			</select>
+			<button
+				onclick={openAddModal}
+				class="btn-primary"
+			>
+				Tilføj udgift
+			</button>
+		</div>
 	</div>
 
 	{#if expenseItems.length === 0}
@@ -138,8 +184,19 @@
 							</div>
 							<div class="flex items-center gap-4">
 								<span class="font-mono text-[var(--color-expense)]">
-									{formatDKK(item.amount)}{getFrequencyLabel(item.frequency)}
+									{fmt(item.amountInCents)}{getFrequencyLabel(item.frequency)}
 								</span>
+								<button
+									onclick={() => handleDuplicate(item.id)}
+									class="btn-icon"
+									aria-label="Duplikér"
+									title="Duplikér"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+										<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+										<path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+									</svg>
+								</button>
 								<button
 									onclick={() => openEditModal(item)}
 									class="btn-sm btn-outline"
@@ -170,27 +227,33 @@
 			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
 				<div>
 					<label for="exp-name" class="block text-sm font-medium mb-1">Navn</label>
-					<input
-						id="exp-name"
-						type="text"
-						bind:value={formName}
-						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-						placeholder="f.eks. Netflix, Husleje"
-						required
-					/>
-				</div>
-				<div>
-					<label for="exp-amount" class="block text-sm font-medium mb-1">Beløb (kr.)</label>
-					<input
-						id="exp-amount"
-						type="number"
-						bind:value={formAmount}
-						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-						min="0"
-						step="1"
-						required
-					/>
-				</div>
+				<input
+					id="exp-name"
+					type="text"
+					bind:value={formName}
+					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+					placeholder="f.eks. Netflix, Husleje"
+					required
+				/>
+				{#if formErrors.name}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{formErrors.name}</p>
+				{/if}
+			</div>
+			<div>
+				<label for="exp-amount" class="block text-sm font-medium mb-1">Beløb</label>
+				<input
+					id="exp-amount"
+					type="number"
+					bind:value={formAmount}
+					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+					min="0"
+					step="0.01"
+					required
+				/>
+				{#if formErrors.amount}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{formErrors.amount}</p>
+				{/if}
+			</div>
 				<div>
 					<label for="exp-category" class="block text-sm font-medium mb-1">Kategori</label>
 					<select
@@ -236,6 +299,16 @@
 								bind:value={formStartDate}
 								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							/>
+						</div>
+						<div>
+							<label for="exp-notes" class="block text-sm font-medium mb-1">Noter</label>
+							<textarea
+								id="exp-notes"
+								bind:value={formNotes}
+								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+								placeholder="f.eks. Betales den 1. hver måned"
+								rows="2"
+							></textarea>
 						</div>
 						<div class="flex items-center gap-2">
 							<input

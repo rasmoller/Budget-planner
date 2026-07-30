@@ -51,8 +51,21 @@ export const en = {
 		importError: 'Invalid file',
 		allBudgets: 'All budgets',
 		newBudgetPlaceholder: 'My Budget',
-		newCategoryPlaceholder: 'e.g. Insurance, Rent'
-	},
+		newCategoryPlaceholder: 'e.g. Insurance, Rent',
+		duplicate: 'Duplicate',
+		duplicateBudget: 'Duplicate budget',
+		duplicateCategory: 'Duplicate category',
+		duplicateItem: 'Duplicate',
+    archive: 'Archive',
+    unarchive: 'Restore',
+    archived: 'Archived',
+    currency: 'Currency',
+    notes: 'Notes',
+    notesPlaceholder: 'e.g. Due on the 1st of each month',
+    darkMode: 'Dark mode',
+    lightMode: 'Light mode',
+    validationError: 'Please fix the errors before saving'
+  },
 	frequency: {
 		daily: 'Daily',
 		weekly: 'Weekly',

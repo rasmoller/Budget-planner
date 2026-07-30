@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { categories } from '$lib/stores/categories';
 	import type { Category } from '$lib/types';
+	import { validateName, type ValidationErrors } from '$lib/utils/validation';
 
 	let showModal = $state(false);
 	let editingCategory = $state<Category | null>(null);
 	let formName = $state('');
 	let formColor = $state('#6366f1');
+	let formErrors = $state<ValidationErrors>({});
 
 	const defaultColors = [
 		'#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f97316',
@@ -16,6 +18,7 @@
 		editingCategory = null;
 		formName = '';
 		formColor = '#6366f1';
+		formErrors = {};
 		showModal = true;
 	}
 
@@ -23,11 +26,17 @@
 		editingCategory = cat;
 		formName = cat.name;
 		formColor = cat.color;
+		formErrors = {};
 		showModal = true;
 	}
 
 	async function handleSubmit() {
-		if (!formName.trim()) return;
+		const nameErr = validateName(formName);
+		formErrors = {};
+		if (nameErr) {
+			formErrors = { name: nameErr };
+			return;
+		}
 
 		if (editingCategory) {
 			await categories.update(editingCategory.id, {
@@ -117,10 +126,13 @@
 						placeholder="f.eks. Husleje, Mad, Transport"
 						required
 					/>
+					{#if formErrors.name}
+						<p class="text-xs text-[var(--color-danger)] mt-1">{formErrors.name}</p>
+					{/if}
 				</div>
 				<div>
 					<label class="block text-sm font-medium mb-1">Farve</label>
-					<div class="flex gap-2 flex-wrap">
+					<div class="flex gap-2 flex-wrap items-center">
 						{#each defaultColors as color}
 							<button
 								type="button"
@@ -131,6 +143,19 @@
 								style="background-color: {color}"
 							></button>
 						{/each}
+						<label
+							for="cat-custom-color"
+							class="w-8 h-8 rounded-full border-2 border-dashed border-[var(--color-border)] cursor-pointer flex items-center justify-center text-[10px] text-gray-400 hover:border-[var(--color-text)] transition-colors"
+							title="Custom color"
+						>
+							+
+						</label>
+						<input
+							id="cat-custom-color"
+							type="color"
+							bind:value={formColor}
+							class="w-8 h-8 rounded-full cursor-pointer border-0 p-0"
+						/>
 					</div>
 				</div>
 				<div class="flex justify-end gap-2 pt-4">

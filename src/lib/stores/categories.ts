@@ -33,6 +33,34 @@ function createCategoryStore() {
 			update((cats) => [...cats, category]);
 			return category;
 		},
+		async duplicate(categoryId: string) {
+			const existing = await db.categories.get(categoryId);
+			if (!existing) return null;
+			const cats = get({ subscribe });
+			const newCategory: Category = {
+				...existing,
+				id: crypto.randomUUID(),
+				name: `${existing.name} (kopi)`,
+				order: cats.length,
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			await db.categories.add(newCategory);
+
+			const items = await db.recurringItems.where('categoryId').equals(categoryId).toArray();
+			for (const item of items) {
+				await db.recurringItems.add({
+					...item,
+					id: crypto.randomUUID(),
+					categoryId: newCategory.id,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				});
+			}
+
+			update((prev) => [...prev, newCategory]);
+			return newCategory;
+		},
 		async update(id: string, data: Partial<Pick<Category, 'name' | 'color'>>) {
 			const existing = await db.categories.get(id);
 			if (!existing) return;
@@ -64,3 +92,4 @@ function createCategoryStore() {
 }
 
 export const categories = createCategoryStore();
+

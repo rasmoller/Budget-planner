@@ -16,22 +16,20 @@
   --color-expense: #dc2626;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a;
-    --color-text: #e2e8f0;
-    --color-border: #334155;
-    --color-surface: #1e293b;
-    --color-header: #1e3a5f;
-    --color-header-text: #f0f4f8;
-    --color-primary: #3b82f6;
-    --color-primary-hover: #60a5fa;
-    --color-danger: #ef4444;
-    --color-danger-hover: #f87171;
-    --color-success: #22c55e;
-    --color-income: #22c55e;
-    --color-expense: #ef4444;
-  }
+.dark {
+  --color-bg: #0f172a;
+  --color-text: #e2e8f0;
+  --color-border: #334155;
+  --color-surface: #1e293b;
+  --color-header: #1e3a5f;
+  --color-header-text: #f0f4f8;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-danger: #ef4444;
+  --color-danger-hover: #f87171;
+  --color-success: #22c55e;
+  --color-income: #22c55e;
+  --color-expense: #ef4444;
 }
 
 body {
@@ -47,8 +45,6 @@ dialog {
   margin: auto;
 }
 
-/* ── Hover isolation ──────────────────────────────────── */
-
 .category-row:hover:not(:has(.btn-icon:hover, [role="button"]:hover)) {
   background-color: color-mix(in srgb, var(--color-border) 30%, transparent);
 }
@@ -61,10 +57,8 @@ dialog {
   color: #94a3b8;
 }
 
-@media (prefers-color-scheme: dark) {
-  ::placeholder {
-    color: #cbd5e1;
-  }
+.dark ::placeholder {
+  color: #cbd5e1;
 }
 
 input, select, textarea {
@@ -75,8 +69,6 @@ option {
   background-color: var(--color-surface);
   color: var(--color-text);
 }
-
-/* ── Buttons ──────────────────────────────────────────── */
 
 .btn {
   display: inline-flex;
@@ -95,7 +87,6 @@ option {
   cursor: not-allowed;
 }
 
-/* Primary / CTA */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -113,7 +104,6 @@ option {
   background-color: var(--color-primary-hover);
 }
 
-/* Danger (solid) */
 .btn-danger {
   display: inline-flex;
   align-items: center;
@@ -131,7 +121,6 @@ option {
   background-color: var(--color-danger-hover);
 }
 
-/* Cancel / Outline */
 .btn-outline {
   display: inline-flex;
   align-items: center;
@@ -148,14 +137,12 @@ option {
   background-color: color-mix(in srgb, var(--color-border) 30%, transparent);
 }
 
-/* Small outline (for compact UIs like year nav) */
 .btn-sm {
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
   border-radius: 0.25rem;
 }
 
-/* Ghost text-link */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -171,7 +158,6 @@ option {
   opacity: 0.8;
 }
 
-/* Icon button */
 .btn-icon {
   padding: 0.375rem;
   border-radius: 0.25rem;
@@ -188,7 +174,6 @@ option {
   background-color: color-mix(in srgb, var(--color-danger) 10%, transparent);
 }
 
-/* Outline danger (inline delete) */
 .btn-outline-danger {
   display: inline-flex;
   align-items: center;
@@ -206,7 +191,6 @@ option {
   color: white;
 }
 
-/* Pill toggle (for tab-like selectors) */
 .btn-pill {
   display: inline-flex;
   align-items: center;
@@ -226,7 +210,6 @@ option {
   background-color: color-mix(in srgb, var(--color-border) 30%, transparent);
 }
 
-/* Header translucent button */
 .btn-header {
   display: inline-flex;
   align-items: center;
