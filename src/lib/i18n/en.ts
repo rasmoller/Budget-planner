@@ -26,6 +26,7 @@ export const en = {
 		type: 'Type',
 		save: 'Save',
 		cancel: 'Cancel',
+		edit: 'Edit',
 		delete: 'Delete',
 		confirmDelete: 'Are you sure?',
 		deleteCategoryWarning: 'If the category is deleted, all items in the category will also be deleted.',

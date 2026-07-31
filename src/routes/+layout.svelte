@@ -268,8 +268,9 @@
 		<h3 class="text-lg font-semibold mb-4">{$t.budget.createBudget}</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleCreateBudget(); }}>
 			<div class="mb-4">
-				<label class="block text-sm font-medium mb-1">{$t.budget.name}</label>
+				<label for="budget-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
 				<input
+					id="budget-name"
 					type="text"
 					bind:value={newBudgetName}
 					class="w-full px-3 py-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text)]"

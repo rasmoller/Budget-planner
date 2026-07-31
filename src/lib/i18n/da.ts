@@ -26,6 +26,7 @@ export const da = {
     type: "Type",
     save: "Gem",
     cancel: "Annuller",
+    edit: "Rediger",
     delete: "Slet",
     confirmDelete: "Er du sikker?",
     deleteCategoryWarning:

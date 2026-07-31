@@ -119,12 +119,14 @@
 					/>
 				</div>
 				<div>
-					<label class="block text-sm font-medium mb-1">Farve</label>
-					<div class="flex gap-2 flex-wrap">
+					<span id="cat-color-label" class="block text-sm font-medium mb-1">Farve</span>
+					<div class="flex gap-2 flex-wrap" role="group" aria-labelledby="cat-color-label">
 						{#each defaultColors as color}
 							<button
 								type="button"
 								onclick={() => (formColor = color)}
+								aria-label={`Vælg farve ${color}`}
+								aria-pressed={formColor === color}
 								class="w-8 h-8 rounded-full border-2 transition-transform {formColor === color
 									? 'border-[var(--color-text)] scale-110'
 									: 'border-transparent'}"
