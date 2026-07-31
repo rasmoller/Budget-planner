@@ -81,7 +81,7 @@
 	}
 
 	async function handleCreateBudget() {
-		const nameErr = validateName(newBudgetName);
+		const nameErr = validateName(newBudgetName, $t);
 		newBudgetErrors = {};
 		if (nameErr) {
 			newBudgetErrors = { name: nameErr };
@@ -109,7 +109,7 @@
 	async function handleRenameBudget() {
 		const target = renameBudgetTarget;
 		if (!target) return;
-		const nameErr = validateName(renameBudgetName);
+		const nameErr = validateName(renameBudgetName, $t);
 		renameBudgetErrors = {};
 		if (nameErr) {
 			renameBudgetErrors = { name: nameErr };

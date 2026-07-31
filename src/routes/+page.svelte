@@ -138,7 +138,7 @@
 	}
 
 	async function handleSaveCategory() {
-		const nameErr = validateName(catFormName);
+		const nameErr = validateName(catFormName, $t);
 		catFormErrors = {};
 		if (nameErr) {
 			catFormErrors = { name: nameErr };
@@ -154,8 +154,8 @@
 	}
 
 	async function handleSaveItem() {
-		const nameErr = validateName(itemFormName);
-		const amountErr = validateAmount(itemFormAmount);
+		const nameErr = validateName(itemFormName, $t);
+		const amountErr = validateAmount(itemFormAmount, $t);
 		itemFormErrors = {};
 		if (nameErr) itemFormErrors.name = nameErr;
 		if (amountErr) itemFormErrors.amount = amountErr;
@@ -333,15 +333,6 @@
 	</div>
 
 	<div class="space-y-3">
-		<div class="flex justify-center">
-			<button
-				onclick={openAddCategory}
-				class="btn-pill"
-			>
-				+ {$t.category.addCategory}
-			</button>
-		</div>
-
 		{#if allCategoryGroups.length > 0}
 			{@const sorted = sortCategories(allCategoryGroups)}
 			{#each sorted as group (group.categoryId)}
@@ -512,6 +503,15 @@
 				<p>{$t.category.createFirst}</p>
 			</div>
 		{/if}
+
+		<div class="flex justify-center">
+			<button
+				onclick={openAddCategory}
+				class="btn-pill"
+			>
+				+ {$t.category.addCategory}
+			</button>
+		</div>
 	</div>
 
 	{#if summary}
