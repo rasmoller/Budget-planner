@@ -6,19 +6,23 @@
 |------|---------|-------|-------------------|
 | **Utils: currency** | 0 | 0 | **19** ✅ |
 | **Utils: budget** | 0 | 0 | **27** ✅ |
-| Utils: exchangeRates | **10** | 0 | 0 |
+| **Utils: exchangeRates** | 0 | 0 | **10** ✅ |
 | Utils: validation | **15** | 0 | 0 |
 | **Stores: budget** | 0 | 0 | **22** ✅ |
 | **Stores: displayCurrency** | 0 | 0 | **11** ✅ |
-| Stores: ui | **5** | 0 | 0 |
+| **Stores: ui** | 0 | 0 | **5** ✅ |
+| **Stores: viewMode** | 0 | 0 | **3** ✅ |
 | Stores: dialogs | **2** | 0 | 0 |
+| **Components: ActionBar** | 0 | 0 | **6** ✅ |
+| **Components: SummaryCards** | 0 | 0 | **5** ✅ |
+| **Components: NestedDonut** | 0 | 0 | **4** ✅ |
 | Types | **2** | 0 | 0 |
 | DB | **3** | 0 | 0 |
-| **Total** | **37** | **0** | **79** ✅ |
+| **Total** | **22** | **0** | **112** ✅ |
 
 ## Next Step
 
-**Write `exchangeRates.test.ts`** — it's the largest untested module and already imported by the displayCurrency tests. 10 tests planned.
+**Write `validation.test.ts`** — the largest remaining untested module. 15 tests planned.
 
 ---
 
@@ -32,11 +36,9 @@
 
 `getMonthlyAmount`, `getMonthKey`, `getMonthNumber`, `getYearFromKey`, `generateMonthKeys`, `isItemActiveInMonth`, `isIncomeItem`/`isExpenseItem`, `calculateMonthSummary`
 
-### `exchangeRates.test.ts` — planned (10)
+### `exchangeRates.test.ts` — fully implemented (10)
 
-- `fetchExchangeRates` returns expected structure
-- `convertAmount`: same currency, EUR→DKK, DKK→EUR, USD→DKK, rounding
-- `getRate`: same currency, direct rate, inverse rate, cross rate
+`fetchExchangeRates` (1), `convertAmount` (5), `getRate` (4)
 
 ### `validation.test.ts` — planned (15)
 
@@ -62,13 +64,33 @@ RecurringItems (6): `load`, `add`, `update`, `duplicate`, `remove`
 
 `formatDisplay` (6), `convertGroups` (5)
 
-### `ui.test.ts` — planned (5)
+### `ui.test.ts` — fully implemented (5)
 
 `toggleLanguage`, `setLanguage`, `toggleCategory` (add, remove, no cross-talk)
+
+### `viewMode.test.ts` — fully implemented (3)
+
+`viewMode` defaults to `'month'`, switch to `'year'`, switch back
 
 ### `dialogs.test.ts` — planned (2)
 
 `openAllBudgets` initial value, increment
+
+---
+
+## Components
+
+### `ActionBar.test.ts` — fully implemented (6)
+
+Month/year navigation, view-mode toggle buttons, currency selector
+
+### `SummaryCards.test.ts` — fully implemented (5)
+
+Income/expense/balance totals, page links, positive/negative balance colors
+
+### `NestedDonut.test.ts` — fully implemented (4)
+
+Inner-ring entries, spacer dataset, outer-ring income/expense arcs, zero-total omission
 
 ---
 
