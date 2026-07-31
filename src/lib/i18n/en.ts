@@ -54,6 +54,7 @@ export const en = {
 		newCategoryPlaceholder: 'e.g. Insurance, Rent',
 		duplicate: 'Duplicate',
 		duplicateBudget: 'Duplicate budget',
+		renameBudget: 'Rename budget',
 		duplicateCategory: 'Duplicate category',
 		duplicateItem: 'Duplicate',
     archive: 'Archive',
