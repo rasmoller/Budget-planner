@@ -8,6 +8,7 @@
 	import type { RecurringItem, Currency } from '$lib/types';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
+	import { t } from '$lib/i18n';
 
 	let showModal = $state(false);
 	let editingItem = $state<RecurringItem | null>(null);
@@ -79,7 +80,7 @@
 	}
 
 	async function handleDelete(id: string) {
-		if (confirm('Er du sikker på at du vil slette denne indtægt?')) {
+		if (confirm($t.entry.deleteConfirmIncome)) {
 			await recurringItems.remove(id);
 		}
 	}
@@ -90,20 +91,20 @@
 
 	function getFrequencyLabel(freq: string): string {
 		const labels: Record<string, string> = {
-			daily: '/dag',
-			weekly: '/uge',
-			monthly: '/md',
-			yearly: '/år'
+			daily: $t.common.perDay,
+			weekly: $t.common.perWeek,
+			monthly: $t.common.perMonth,
+			yearly: $t.common.perYear
 		};
 		return labels[freq] || '';
 	}
 
 	function resolveCategory(item: RecurringItem) {
 		if (isUncategorized(item.categoryId)) {
-			return { name: 'Ingen kategori', color: '#9ca3af' };
+			return { name: $t.common.uncategorized, color: '#9ca3af' };
 		}
 		const cat = $categories.find((c) => c.id === item.categoryId);
-		return { name: cat?.name || 'Ukendt', color: cat?.color || '#9ca3af' };
+		return { name: cat?.name || $t.common.unknown, color: cat?.color || '#9ca3af' };
 	}
 
 	function fmt(amount: number): string {
@@ -117,12 +118,17 @@
 </script>
 
 <svelte:head>
-	<title>Budget Planner - Indtægter</title>
+	<title>{$t.nav.incomes} - Budget Planner</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-bold">Indtægter</h2>
+		<div class="flex items-center gap-3">
+			<button onclick={() => history.back()} class="btn-ghost p-0.5" aria-label="Back">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+			</button>
+			<h2 class="text-2xl font-bold">{$t.nav.incomes}</h2>
+		</div>
 		<div class="flex items-center gap-2">
 			<select
 				value={$displayCurrency ?? 'none'}
@@ -144,15 +150,15 @@
 				onclick={openAddModal}
 				class="btn-primary"
 			>
-				Tilføj indtægt
+				{$t.entry.addIncome}
 			</button>
 		</div>
 	</div>
 
 	{#if incomeItems.length === 0}
 		<div class="text-center py-12 text-gray-500">
-			<p>Ingen indtægter endnu.</p>
-			<p class="mt-2">Tilføj din første indtægt for at komme i gang.</p>
+			<p>{$t.entry.noItems}</p>
+			<p class="mt-2">{$t.entry.createFirstIncome}</p>
 		</div>
 	{:else}
 		{@const grouped = Object.entries(
@@ -170,7 +176,7 @@
 					<div class="w-3 h-3 rounded-full" style="background-color: {color}"></div>
 					<span class="font-semibold">{catName}</span>
 					<span class="text-sm text-gray-500">
-						({items.length} {items.length === 1 ? 'element' : 'elementer'})
+						({items.length} {items.length === 1 ? $t.common.item : $t.common.items})
 					</span>
 				</div>
 				<div class="divide-y divide-[var(--color-border)]">
@@ -179,7 +185,7 @@
 							<div>
 								<span class="font-medium">{item.name}</span>
 								{#if !item.isActive}
-									<span class="ml-2 text-xs text-gray-400">(Inaktiv)</span>
+									<span class="ml-2 text-xs text-gray-400">({$t.common.inactive})</span>
 								{/if}
 							</div>
 							<div class="flex items-center gap-4">
@@ -189,8 +195,8 @@
 								<button
 									onclick={() => handleDuplicate(item.id)}
 									class="btn-icon"
-									aria-label="Duplikér"
-									title="Duplikér"
+									aria-label="{$t.entry.duplicateItem}"
+									title="{$t.entry.duplicateItem}"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
 										<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
@@ -201,13 +207,13 @@
 									onclick={() => openEditModal(item)}
 									class="btn-sm btn-outline"
 								>
-									Rediger
+									{$t.common.edit}
 								</button>
 								<button
 									onclick={() => handleDelete(item.id)}
 									class="btn-sm btn-outline-danger"
 								>
-									Slet
+									{$t.common.delete}
 								</button>
 							</div>
 						</div>
@@ -222,17 +228,17 @@
 	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 		<div class="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md mx-4">
 			<h3 class="text-lg font-semibold mb-4">
-				{editingItem ? 'Rediger indtægt' : 'Tilføj indtægt'}
+				{editingItem ? $t.entry.editIncome : $t.entry.addIncome}
 			</h3>
 			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
 				<div>
-					<label for="inc-name" class="block text-sm font-medium mb-1">Navn</label>
+					<label for="inc-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
 				<input
 					id="inc-name"
 					type="text"
 					bind:value={formName}
 					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-					placeholder="f.eks. Løn, Bonus"
+					placeholder="{$t.field.notesPlaceholder}"
 					required
 				/>
 				{#if formErrors.name}
@@ -240,7 +246,7 @@
 				{/if}
 			</div>
 			<div>
-				<label for="inc-amount" class="block text-sm font-medium mb-1">Beløb</label>
+				<label for="inc-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
 				<input
 					id="inc-amount"
 					type="number"
@@ -255,29 +261,29 @@
 				{/if}
 			</div>
 				<div>
-					<label for="inc-category" class="block text-sm font-medium mb-1">Kategori</label>
+					<label for="inc-category" class="block text-sm font-medium mb-1">{$t.field.category}</label>
 					<select
 						id="inc-category"
 						bind:value={formCategoryId}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 					>
-						<option value={UNCATEGORIZED}>Ingen kategori</option>
+						<option value={UNCATEGORIZED}>{$t.common.uncategorized}</option>
 						{#each $categories as cat}
 							<option value={cat.id}>{cat.name}</option>
 						{/each}
 					</select>
 				</div>
 				<div>
-					<label for="inc-frequency" class="block text-sm font-medium mb-1">Frekvens</label>
+					<label for="inc-frequency" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
 					<select
 						id="inc-frequency"
 						bind:value={formFrequency}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 					>
-						<option value="daily">Dagligt</option>
-						<option value="weekly">Ugentligt</option>
-						<option value="monthly">Månedligt</option>
-						<option value="yearly">Årligt</option>
+						<option value="daily">{$t.frequency.daily}</option>
+						<option value="weekly">{$t.frequency.weekly}</option>
+						<option value="monthly">{$t.frequency.monthly}</option>
+						<option value="yearly">{$t.frequency.yearly}</option>
 					</select>
 				</div>
 
@@ -286,13 +292,13 @@
 					onclick={() => (showMoreOptions = !showMoreOptions)}
 					class="text-sm text-[var(--color-primary)] hover:underline"
 				>
-					{showMoreOptions ? '▲ Færre indstillinger' : '▼ Flere indstillinger'}
+					{showMoreOptions ? '▲ ' + $t.common.fewerOptions : '▼ ' + $t.common.moreOptions}
 				</button>
 
 				{#if showMoreOptions}
 					<div class="space-y-4 pt-2 border-t border-[var(--color-border)]">
 						<div>
-							<label for="inc-startdate" class="block text-sm font-medium mb-1">Startdato</label>
+							<label for="inc-startdate" class="block text-sm font-medium mb-1">{$t.field.startDate}</label>
 							<input
 								id="inc-startdate"
 								type="date"
@@ -301,12 +307,12 @@
 							/>
 						</div>
 						<div>
-							<label for="inc-notes" class="block text-sm font-medium mb-1">Noter</label>
+							<label for="inc-notes" class="block text-sm font-medium mb-1">{$t.field.notes}</label>
 							<textarea
 								id="inc-notes"
 								bind:value={formNotes}
 								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
-								placeholder="f.eks. Betales den 1. hver måned"
+								placeholder="{$t.field.notesPlaceholder}"
 								rows="2"
 							></textarea>
 						</div>
@@ -317,7 +323,7 @@
 								id="inc-isActive"
 								class="w-4 h-4"
 							/>
-							<label for="inc-isActive" class="text-sm">Aktiv</label>
+							<label for="inc-isActive" class="text-sm">{$t.common.active}</label>
 						</div>
 					</div>
 				{/if}
@@ -328,13 +334,13 @@
 						onclick={() => (showModal = false)}
 						class="btn-outline"
 					>
-						Annuller
+						{$t.common.cancel}
 					</button>
 					<button
 						type="submit"
 						class="btn-primary"
 					>
-						{editingItem ? 'Gem' : 'Tilføj'}
+						{editingItem ? $t.common.save : $t.entry.addIncome}
 					</button>
 				</div>
 			</form>

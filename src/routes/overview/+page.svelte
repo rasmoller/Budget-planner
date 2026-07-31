@@ -2,7 +2,6 @@
 	import { budget } from '$lib/stores/budget';
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
-	import { formatCurrency } from '$lib/utils/currency';
 	import {
 		calculateMonthSummary,
 		generateMonthKeys,
@@ -10,13 +9,15 @@
 		getMonthlyAmount
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
+	import SummaryCards from '$lib/components/SummaryCards.svelte';
+	import ActionBar from '$lib/components/ActionBar.svelte';
 	import type { RecurringItem, CategoryGroup, Currency } from '$lib/types';
+	import { viewMode } from '$lib/stores/viewMode';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 
 	let currentYear = $state(new Date().getFullYear());
 	let expandedCategories = $state(new Set<string>());
 	let expandedItems = $state(new Set<string>());
-	let viewMode = $state<'year' | 'month'>('year');
 	let selectedMonth = $state(
 		`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
 	);
@@ -28,7 +29,7 @@
 	);
 
 	const monthSummary = $derived(
-		viewMode === 'month'
+		$viewMode === 'month'
 			? calculateMonthSummary($recurringItems, $categories, selectedMonth)
 			: null
 	);
@@ -61,10 +62,10 @@
 
 	function formatFrequency(freq: string): string {
 		const labels: Record<string, string> = {
-			daily: 'Dagligt',
-			weekly: 'Ugentligt',
-			monthly: 'Månedligt',
-			yearly: 'Årligt'
+			daily: $t.frequency.daily,
+			weekly: $t.frequency.weekly,
+			monthly: $t.frequency.monthly,
+			yearly: $t.frequency.yearly
 		};
 		return labels[freq] || freq;
 	}
@@ -75,6 +76,16 @@
 
 	function nextYear() {
 		currentYear++;
+	}
+
+	function prevMonth() {
+		const [y, m] = selectedMonth.split('-').map(Number);
+		selectedMonth = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+	}
+
+	function nextMonth() {
+		const [y, m] = selectedMonth.split('-').map(Number);
+		selectedMonth = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`;
 	}
 
 	function getMonthTotals(items: RecurringItem[], mk: string): number {
@@ -102,72 +113,9 @@
 </svelte:head>
 
 <div class="space-y-6">
-		<div class="flex justify-end gap-2 items-center -mt-4 mb-2">
-			<select
-				value={$displayCurrency ?? 'none'}
-				onchange={(e) => {
-					const val = (e.target as HTMLSelectElement).value;
-					displayCurrency.set(val === 'none' ? null : val as Currency);
-					localStorage.setItem('displayCurrency', val);
-				}}
-				class="px-2 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
-			>
-				<option value="none">Auto ({$budget?.currency ?? 'DKK'})</option>
-				<option value="DKK">DKK</option>
-				<option value="EUR">EUR</option>
-				<option value="USD">USD</option>
-				<option value="SEK">SEK</option>
-				<option value="NOK">NOK</option>
-			</select>
-			<button
-				onclick={() => (viewMode = 'year')}
-				class="btn-sm {viewMode === 'year' ? 'btn-primary' : 'btn-outline'}"
-			>
-				{$t.overview.yearView}
-			</button>
-			<button
-				onclick={() => (viewMode = 'month')}
-				class="btn-sm {viewMode === 'month' ? 'btn-primary' : 'btn-outline'}"
-			>
-				{$t.overview.monthView}
-			</button>
-		</div>
+	<ActionBar {currentYear} {selectedMonth} {prevYear} {nextYear} {prevMonth} {nextMonth} />
 
-	{#if viewMode === 'year'}
-		<div class="flex items-center justify-center gap-4">
-			<button onclick={prevYear} class="btn-sm btn-outline">
-				←
-			</button>
-			<span class="text-xl font-semibold">{currentYear}</span>
-			<button onclick={nextYear} class="btn-sm btn-outline">
-				→
-			</button>
-		</div>
-
-		<div class="grid grid-cols-3 gap-4">
-			<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500">{$t.budget.totalIncome}</p>
-				<p class="text-xl font-bold" style="color: var(--color-income)">
-					{fmt(yearTotals.income)}
-				</p>
-			</div>
-			<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500">{$t.budget.totalExpenses}</p>
-				<p class="text-xl font-bold" style="color: var(--color-expense)">
-					{fmt(yearTotals.expense)}
-				</p>
-			</div>
-			<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500">{$t.budget.balance}</p>
-				<p
-					class="text-xl font-bold"
-					style="color: {yearTotals.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}"
-				>
-					{fmt(yearTotals.balance)}
-				</p>
-			</div>
-		</div>
-
+	{#if $viewMode === 'year'}
 		{#if $categories.length > 0 && $recurringItems.length > 0}
 			{@const allGroups = (() => {
 				const map = new Map<string, CategoryGroup>();
@@ -219,7 +167,7 @@
 									<span style="color: var(--color-expense)">-{fmt(group.expenseTotal)}</span>
 								{/if}
 								<span class="font-semibold" style="color: {group.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">
-									{fmt(group.balance)}/år
+									{fmt(group.balance)}{$t.common.perYear}
 								</span>
 							</div>
 						</button>
@@ -235,13 +183,13 @@
 											<div class="flex items-center gap-2">
 												<span class="text-gray-400 text-sm">{itemExpanded ? '▼' : '▶'}</span>
 												<span class="text-xs px-1.5 py-0.5 rounded {item.type === 'income' ? 'bg-[var(--color-income)]/10 text-[var(--color-income)]' : 'bg-[var(--color-expense)]/10 text-[var(--color-expense)]'}">
-													{item.type === 'income' ? 'Indtægt' : 'Udgift'}
+													{item.type === 'income' ? $t.summary.income : $t.summary.expense}
 												</span>
 												<span>{item.name}</span>
 												<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
 											</div>
 											<span class="font-mono text-sm" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
-												{item.type === 'expense' ? '-' : ''}{fmt(getMonthlyAmount(item))}/md
+												{item.type === 'expense' ? '-' : ''}{fmt(getMonthlyAmount(item))}{$t.common.perMonth}
 											</span>
 										</button>
 										{#if itemExpanded}
@@ -273,7 +221,7 @@
 			<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
 				{#each yearSummaries as ms, i}
 					<button
-						onclick={() => { selectedMonth = ms.month; viewMode = 'month'; }}
+						onclick={() => { selectedMonth = ms.month; viewMode.set('month'); }}
 						class="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-border)] transition-colors"
 					>
 						<span>{$t.months[i]} {currentYear}</span>
@@ -293,66 +241,13 @@
 						</div>
 					</button>
 				{/each}
-			</div>
 		</div>
+	</div>
+
+	<SummaryCards income={yearTotals.income} expense={yearTotals.expense} {fmt} />
 	{:else}
 		<div class="space-y-4">
-			<div class="flex items-center justify-center gap-4">
-				<button
-					onclick={() => {
-						const [y, m] = selectedMonth.split('-').map(Number);
-						if (m === 1) {
-							selectedMonth = `${y - 1}-12`;
-						} else {
-							selectedMonth = `${y}-${String(m - 1).padStart(2, '0')}`;
-						}
-					}}
-					class="btn-sm btn-outline"
-				>
-					←
-				</button>
-				<span class="text-xl font-semibold">
-					{$t.months[parseInt(selectedMonth.split('-')[1]) - 1]} {selectedMonth.split('-')[0]}
-				</span>
-				<button
-					onclick={() => {
-						const [y, m] = selectedMonth.split('-').map(Number);
-						if (m === 12) {
-							selectedMonth = `${y + 1}-01`;
-						} else {
-							selectedMonth = `${y}-${String(m + 1).padStart(2, '0')}`;
-						}
-					}}
-					class="btn-sm btn-outline"
-				>
-					→
-				</button>
-			</div>
-
 			{#if monthSummary}
-				<div class="grid grid-cols-3 gap-4">
-					<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.totalIncome}</p>
-						<p class="text-xl font-bold" style="color: var(--color-income)">
-							{fmt(monthSummary.totalIncome)}
-						</p>
-					</div>
-					<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.totalExpenses}</p>
-						<p class="text-xl font-bold" style="color: var(--color-expense)">
-							{fmt(monthSummary.totalExpenses)}
-						</p>
-					</div>
-					<div class="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-			<p class="text-sm text-gray-500">{$t.budget.balance}</p>
-						<p
-							class="text-xl font-bold"
-							style="color: {monthSummary.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}"
-						>
-							{fmt(monthSummary.balance)}
-						</p>
-					</div>
-				</div>
 
 				{#if monthSummary.categories.length > 0}
 					{@const sorted = sortGroups(monthSummary.categories)}
@@ -387,7 +282,7 @@
 											<div class="flex justify-between p-3 pl-10">
 												<span>
 													<span class="text-xs px-1.5 py-0.5 rounded {item.type === 'income' ? 'bg-[var(--color-income)]/10 text-[var(--color-income)]' : 'bg-[var(--color-expense)]/10 text-[var(--color-expense)]'}">
-														{item.type === 'income' ? 'I' : 'U'}
+														{item.type === 'income' ? $t.overview.incomeShort : $t.overview.expenseShort}
 													</span>
 													{item.name}
 													<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
@@ -404,9 +299,11 @@
 					</div>
 				{:else}
 					<div class="text-center py-8 text-gray-500">
-						Ingen data for denne måned.
+						{$t.common.noDataForMonth}
 					</div>
 				{/if}
+
+			<SummaryCards income={monthSummary.totalIncome} expense={monthSummary.totalExpenses} {fmt} />
 			{/if}
 		</div>
 	{/if}
