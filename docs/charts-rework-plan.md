@@ -3,32 +3,18 @@
 ## Current State
 
 The charts page (`/charts`) currently has:
-- A single nested donut chart (custom SVG) showing category income vs expenses for a selected month
-- Month navigation (prev/next)
-- A summary table below the chart with per-category income/expense/balance
+- A nested donut chart built with **Chart.js** (`chart.js` + `svelte-chartjs`)
+  - Inner ring: one arc per category (total = income + expense)
+  - Outer ring: income/expense sub-arcs per category (same color as the inner ring category)
+  - Spacer dataset creates a gap between the rings; `spacing: 3` separates individual arcs
+  - Center-text plugin shows hovered slice details or the grand total
+- Month/Year toggle (shared `viewMode` store with the overview page)
+- Month/year navigation + currency selector (shared `ActionBar` component)
+- A summary table below the chart with per-category income/expense/balance and checkboxes to toggle categories
 
-## Proposed Changes
+## Remaining Work
 
-### 1. Advanced Pie Chart (Donut) — Replace Current Chart
-
-The current nested donut has two rings: inner = category totals, outer = income/expense split. This is confusing because the outer ring colors don't map clearly to income vs expense.
-
-**New design:**
-- Single-level donut chart where each slice represents a category
-- Each category slice is subdivided into two sub-slices: **income** and **expense**
-- Sub-slices inherit the category color but use two variants:
-  - Income: full opacity / lighter shade
-  - Expense: slightly darker or with a subtle pattern/border
-- On hover: highlight the category, show breakdown in center (category name, income amount, expense amount, net balance)
-- Keep the legend below the chart
-
-**Implementation:**
-- Modify `src/lib/components/charts/NestedDonut.svelte` to use a single ring with sub-arcs
-- Each category gets one arc span proportional to `incomeTotal + expenseTotal`
-- Within that span, income occupies `income / total` of the arc, expense occupies the rest
-- Use opacity/shade variation instead of separate rings to keep it readable
-
-### 2. Line Chart — Category Spending Over Time
+### 1. Line Chart — Category Spending Over Time
 
 **New component:** `src/lib/components/charts/CategoryLineChart.svelte`
 
@@ -48,25 +34,7 @@ The current nested donut has two rings: inner = category totals, outer = income/
 - Click a category in the legend to toggle its visibility
 - Hover to see a vertical crosshair with values for all visible categories
 
-### 3. Month / Year Toggle
-
-Add a toggle (pill buttons or segmented control) at the top of the charts page:
-
-```
-[ Months | Years ]
-```
-
-- **Months mode (default):** Charts show data for each month of the current year. Line chart X-axis = 12 months. Pie chart = selected month.
-- **Years mode:** Charts show data aggregated per year over a multi-year range. Line chart X-axis = years. Pie chart = selected year.
-
-The toggle affects:
-- The pie/donut chart (which time period it summarizes)
-- The line chart (X-axis granularity)
-- The summary table (monthly vs yearly totals)
-
-**Year navigation:** In both modes, add prev/next year navigation (already exists for the overview page).
-
-### 4. Page Layout
+### 2. Page Layout
 
 Redesign the charts page as a scrollable dashboard of chart cards:
 
@@ -93,6 +61,13 @@ Redesign the charts page as a scrollable dashboard of chart cards:
 ```
 
 On smaller screens, the pie and line chart stack vertically.
+
+---
+
+## Done
+
+- ✅ **Month/Year toggle** — shared `viewMode` store with the overview page
+- ✅ **Nested donut rework** — replaced custom SVG with Chart.js; kept the two-ring design (inner = categories, outer = income/expense sub-arcs) rather than the planned single ring
 
 ---
 
@@ -138,9 +113,9 @@ Turn the charts page into a fully customizable dashboard where users can:
 
 ## Implementation Order
 
-1. **Month/Year toggle** — Add to existing charts page, pass to `calculateMonthSummary`
-2. **Refactor NestedDonut** — Rework to single-ring with income/expense sub-arcs
-3. **Line chart component** — New SVG component, category lines over time
+1. ✅ **Month/Year toggle** — Shared `viewMode` store, added to overview + charts
+2. ✅ **NestedDonut rework** — Chart.js, two-ring with income/expense sub-arcs
+3. **Line chart component** — Category lines over time (up next)
 4. **Page layout redesign** — Two-column responsive grid for charts
 5. **(Future) Widget system** — Customizable dashboard with add/remove/reorder
 6. **(Future) Budget comparisons** — Multi-budget data loading and overlay

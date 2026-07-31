@@ -123,7 +123,12 @@
 
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-bold">{$t.nav.incomes}</h2>
+		<div class="flex items-center gap-3">
+			<button onclick={() => history.back()} class="btn-ghost p-0.5" aria-label="Back">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+			</button>
+			<h2 class="text-2xl font-bold">{$t.nav.incomes}</h2>
+		</div>
 		<div class="flex items-center gap-2">
 			<select
 				value={$displayCurrency ?? 'none'}
