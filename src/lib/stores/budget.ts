@@ -134,11 +134,13 @@ function createBudgetStore() {
 				currentBudget.set(budgets.length > 0 ? budgets[0] : null);
 			}
 		},
-		async updateName(name: string) {
-			const b = get(currentBudget);
-			if (!b) return;
-			await db.budgets.update(b.id, { name, updatedAt: new Date() });
-			currentBudget.update((curr) => (curr ? { ...curr, name, updatedAt: new Date() } : curr));
+		async updateName(name: string, budgetId?: string) {
+			const id = budgetId ?? get(currentBudget)?.id;
+			if (!id) return;
+			await db.budgets.update(id, { name, updatedAt: new Date() });
+			if (get(currentBudget)?.id === id) {
+				currentBudget.update((curr) => (curr ? { ...curr, name, updatedAt: new Date() } : curr));
+			}
 			const budgets = await db.budgets.toArray();
 			allBudgets.set(budgets);
 		}

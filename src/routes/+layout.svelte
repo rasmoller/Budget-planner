@@ -24,11 +24,15 @@
 	let deleteBudgetDialog: HTMLDialogElement;
 	let exportDialog: HTMLDialogElement;
 	let allBudgetsDialog: HTMLDialogElement;
+	let renameBudgetDialog: HTMLDialogElement;
 
 	let newBudgetName = $state('');
 	let newBudgetCurrency = $state<Currency>('DKK');
 	let newBudgetErrors = $state<ValidationErrors>({});
 	let deleteBudgetTarget = $state<{ id: string; name: string } | null>(null);
+	let renameBudgetTarget = $state<{ id: string; name: string } | null>(null);
+	let renameBudgetName = $state('');
+	let renameBudgetErrors = $state<ValidationErrors>({});
 
 	let exportTargetCurrency = $state<Currency>('DKK');
 
@@ -93,6 +97,27 @@
 	function openDeleteBudget(id: string, name: string) {
 		deleteBudgetTarget = { id, name };
 		deleteBudgetDialog?.showModal();
+	}
+
+	function openRenameBudget(id: string, name: string) {
+		renameBudgetTarget = { id, name };
+		renameBudgetName = name;
+		renameBudgetErrors = {};
+		renameBudgetDialog?.showModal();
+	}
+
+	async function handleRenameBudget() {
+		const target = renameBudgetTarget;
+		if (!target) return;
+		const nameErr = validateName(renameBudgetName);
+		renameBudgetErrors = {};
+		if (nameErr) {
+			renameBudgetErrors = { name: nameErr };
+			return;
+		}
+		await budget.updateName(renameBudgetName.trim(), target.id);
+		renameBudgetDialog?.close();
+		renameBudgetTarget = null;
 	}
 
 	async function handleDeleteBudget() {
@@ -420,6 +445,16 @@
 						</button>
 						<div class="flex items-center gap-1">
 							<button
+								onclick={() => openRenameBudget(b.id, b.name)}
+								class="btn-icon"
+								aria-label="{$t.budget.renameBudget}"
+								title="{$t.budget.renameBudget}"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								</svg>
+							</button>
+							<button
 								onclick={() => handleDuplicateBudget(b.id)}
 								class="btn-icon"
 								aria-label="{$t.budget.duplicate}"
@@ -464,6 +499,16 @@
 						</button>
 						<div class="flex items-center gap-1">
 							<button
+								onclick={() => openRenameBudget(b.id, b.name)}
+								class="btn-icon"
+								aria-label="{$t.budget.renameBudget}"
+								title="{$t.budget.renameBudget}"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								</svg>
+							</button>
+							<button
 								onclick={() => handleUnarchiveBudget(b.id)}
 								class="btn-icon"
 								aria-label="{$t.budget.unarchive}"
@@ -505,6 +550,32 @@
 			<button onclick={() => deleteBudgetDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
 			<button onclick={handleDeleteBudget} class="btn-danger">{$t.budget.delete}</button>
 		</div>
+	</div>
+</dialog>
+
+<dialog bind:this={renameBudgetDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50">
+	<div class="p-6">
+		<h3 class="text-lg font-semibold mb-4">{$t.budget.renameBudget}</h3>
+		<form onsubmit={(e) => { e.preventDefault(); handleRenameBudget(); }}>
+			<div class="mb-4">
+				<label for="rename-budget-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
+				<input
+					id="rename-budget-name"
+					type="text"
+					bind:value={renameBudgetName}
+					class="w-full px-3 py-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text)]"
+					placeholder="{$t.budget.newBudgetPlaceholder}"
+					required
+				/>
+				{#if renameBudgetErrors.name}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{renameBudgetErrors.name}</p>
+				{/if}
+			</div>
+			<div class="flex justify-end gap-2">
+				<button type="button" onclick={() => renameBudgetDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+			</div>
+		</form>
 	</div>
 </dialog>
 

@@ -8,7 +8,7 @@
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Multi-budget CRUD (create, switch, duplicate, archive, unarchive, delete) | ✅ | Cascade delete for categories + items |
+| Multi-budget CRUD (create, switch, duplicate, rename, archive, unarchive, delete) | ✅ | Cascade delete for categories + items |
 | Categories (add, update, delete, duplicate, reorder) | ✅ | Drag-and-drop reordering |
 | Recurring items (add, update, delete, duplicate) | ✅ | Daily/weekly/monthly/yearly frequencies |
 | Overview page (year view) | ✅ | Summary cards + expandable category/items drill-down |

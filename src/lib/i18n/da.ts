@@ -56,6 +56,7 @@ export const da = {
     newBudgetPlaceholder: "Mit Budget",
     duplicate: "Duplikér",
     duplicateBudget: "Duplikér budget",
+    renameBudget: "Omdøb budget",
     duplicateCategory: "Duplikér kategori",
     duplicateItem: "Duplikér",
     archive: "Arkivér",

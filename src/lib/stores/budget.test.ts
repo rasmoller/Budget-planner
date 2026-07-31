@@ -196,6 +196,19 @@ describe('budget store', () => {
 		expect(fromDb!.name).toBe('Renamed');
 	});
 
+	it('updateName can rename a specific budget without switching to it', async () => {
+		await db.budgets.add(makeBudget({ id: 'b-1', name: 'First' }));
+		await db.budgets.add(makeBudget({ id: 'b-2', name: 'Second' }));
+		await budget.load();
+
+		await budget.updateName('Renamed Second', 'b-2');
+
+		expect(get(budget)!.id).toBe('b-1');
+		expect(get(budget)!.name).toBe('First');
+		expect((await db.budgets.get('b-2'))!.name).toBe('Renamed Second');
+		expect(get(allBudgets).find((b) => b.id === 'b-2')!.name).toBe('Renamed Second');
+	});
+
 	it('remove deletes budget and cascades to categories and items', async () => {
 		await db.budgets.add(makeBudget({ id: 'b-1', name: 'ToDelete' }));
 		await db.categories.add(makeCategory({ id: 'cat-1', budgetId: 'b-1' }));
