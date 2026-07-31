@@ -147,5 +147,11 @@ export const en = {
     collapse: 'Hide',
     incomeShort: 'I',
     expenseShort: 'E'
+  },
+  validation: {
+    nameRequired: 'Name is required',
+    nameTooLong: 'Name must be at most 100 characters',
+    amountInvalid: 'Amount must be 0 or a positive number',
+    required: 'is required'
   }
 };

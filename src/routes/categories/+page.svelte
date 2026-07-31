@@ -32,7 +32,7 @@
 	}
 
 	async function handleSubmit() {
-		const nameErr = validateName(formName);
+		const nameErr = validateName(formName, $t);
 		formErrors = {};
 		if (nameErr) {
 			formErrors = { name: nameErr };

@@ -153,6 +153,12 @@ export const da = {
     incomeShort: "I",
     expenseShort: "U",
   },
+  validation: {
+    nameRequired: "Navn er påkrævet",
+    nameTooLong: "Navn må højst være 100 tegn",
+    amountInvalid: "Beløb skal være 0 eller et positivt tal",
+    required: "er påkrævet",
+  },
 };
 
 export type Translations = typeof da;

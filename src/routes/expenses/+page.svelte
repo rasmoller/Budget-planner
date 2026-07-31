@@ -53,8 +53,8 @@
 	}
 
 	async function handleSubmit() {
-		const nameErr = validateName(formName);
-		const amountErr = validateAmount(formAmount);
+		const nameErr = validateName(formName, $t);
+		const amountErr = validateAmount(formAmount, $t);
 		formErrors = {};
 		if (nameErr) formErrors.name = nameErr;
 		if (amountErr) formErrors.amount = amountErr;
