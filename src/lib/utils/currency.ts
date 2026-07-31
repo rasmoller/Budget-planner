@@ -1,14 +1,22 @@
-export function formatDKK(amount: number): string {
-	return new Intl.NumberFormat('da-DK', {
+import { CURRENCY_CONFIG, type Currency } from '$lib/types';
+
+export function formatCurrency(amount: number, currency: Currency = 'DKK'): string {
+	const config = CURRENCY_CONFIG[currency];
+	return new Intl.NumberFormat(config.locale, {
 		style: 'currency',
-		currency: 'DKK',
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0
-	}).format(amount);
+		currency: config.code,
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	}).format(amount / 100);
 }
 
-export function parseDKK(value: string): number {
+export function parseCurrency(value: string): number {
 	const cleaned = value.replace(/[^\d,-]/g, '').replace(',', '.');
 	const num = parseFloat(cleaned);
-	return isNaN(num) ? 0 : Math.round(num);
+	if (isNaN(num)) return 0;
+	return Math.round(num * 100);
+}
+
+export function formatDKK(amount: number): string {
+	return formatCurrency(amount, 'DKK');
 }

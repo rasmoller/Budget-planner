@@ -21,6 +21,8 @@ async function seedData() {
 	await db.budgets.add({
 		id: budgetId,
 		name: 'Test Budget',
+		currency: 'DKK',
+		isArchived: false,
 		createdAt: now(),
 		updatedAt: now()
 	});
@@ -39,7 +41,7 @@ async function seedData() {
 		categoryId: 'c-1',
 		type: 'income',
 		name: 'Løn',
-		amount: 25000,
+		amountInCents: 25000,
 		frequency: 'monthly',
 		startDate: now(),
 		isActive: true,
@@ -52,7 +54,7 @@ async function seedData() {
 		categoryId: 'c-1',
 		type: 'expense',
 		name: 'Husleje',
-		amount: 8000,
+		amountInCents: 8000,
 		frequency: 'monthly',
 		startDate: now(),
 		isActive: true,

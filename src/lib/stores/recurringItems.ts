@@ -28,6 +28,20 @@ function createRecurringItemStore() {
 			update((items) => [...items, item]);
 			return item;
 		},
+		async duplicate(itemId: string) {
+			const existing = await db.recurringItems.get(itemId);
+			if (!existing) return null;
+			const newItem: RecurringItem = {
+				...existing,
+				id: crypto.randomUUID(),
+				name: `${existing.name} (kopi)`,
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			await db.recurringItems.add(newItem);
+			update((items) => [...items, newItem]);
+			return newItem;
+		},
 		async update(id: string, data: Partial<Omit<RecurringItem, 'id' | 'budgetId' | 'createdAt'>>) {
 			const existing = await db.recurringItems.get(id);
 			if (!existing) return;

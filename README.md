@@ -39,4 +39,7 @@ The app opens at `http://localhost:5173`.
 | `npm run build` | Build for production |
 | `npm run preview` | Build and preview locally via Wrangler |
 | `npm run check` | Run type checking |
+| `npm run check 2>&1 \| tail -1` | Print only the type-check result summary |
+| `npm test` | Run the test suite once (Vitest) |
 | `npm run deploy` | Build and deploy to Cloudflare |
+| `npx wrangler versions upload` | Publish a test build to Cloudflare (run after `npm run build`) |

@@ -23,6 +23,19 @@ export class BudgetDatabase extends Dexie {
 				await tx.table('categories').update(categories[i].id, { order: i });
 			}
 		});
+		this.version(3).stores({
+			budgets: 'id, createdAt, isArchived',
+			categories: 'id, budgetId, order',
+			recurringItems: 'id, budgetId, categoryId, type, frequency, isActive'
+		}).upgrade(async (tx) => {
+			const budgets = await tx.table('budgets').toArray();
+			for (const b of budgets) {
+				await tx.table('budgets').update(b.id, {
+					currency: b.currency || 'DKK',
+					isArchived: b.isArchived ?? false
+				});
+			}
+		});
 	}
 }
 

@@ -9,9 +9,9 @@
     "preview": "npm run build && wrangler dev",
     "prepare": "svelte-kit sync || echo ''",
     "check": "wrangler types && svelte-kit sync && rm -rf .svelte-kit/output .svelte-kit/cloudflare .svelte-kit/cloudflare-tmp && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && rm -rf .svelte-kit/output .svelte-kit/cloudflare .svelte-kit/cloudflare-tmp && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:watch": "svelte-kit sync && rm -rf .svelte-kit/output .svelte-kit/cloudflare .svelte-kit/cloudflare-tmp && svelte-check --tsconfig ./tsconfig.json --watch",
     "gen": "wrangler types",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types"
@@ -34,6 +34,8 @@
     "wrangler": "^4.97.0"
   },
   "dependencies": {
-    "dexie": "^4.4.4"
+    "chart.js": "^4.5.1",
+    "dexie": "^4.4.4",
+    "svelte-chartjs": "^4.0.1"
   }
 }
