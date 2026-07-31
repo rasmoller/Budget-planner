@@ -1,7 +1,19 @@
+export type Currency = 'DKK' | 'EUR' | 'USD' | 'SEK' | 'NOK';
+
+export const CURRENCY_CONFIG: Record<Currency, { locale: string; code: string; symbol: string }> = {
+	DKK: { locale: 'da-DK', code: 'DKK', symbol: 'kr.' },
+	EUR: { locale: 'de-DE', code: 'EUR', symbol: '\u20ac' },
+	USD: { locale: 'en-US', code: 'USD', symbol: '$' },
+	SEK: { locale: 'sv-SE', code: 'SEK', symbol: 'kr' },
+	NOK: { locale: 'nb-NO', code: 'NOK', symbol: 'kr' }
+};
+
 export interface Budget {
 	id: string;
 	name: string;
 	description?: string;
+	currency: Currency;
+	isArchived: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -28,10 +40,11 @@ export interface RecurringItem {
 	categoryId: string;
 	type: 'income' | 'expense';
 	name: string;
-	amount: number;
+	amountInCents: number;
 	frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
 	startDate: Date;
 	isActive: boolean;
+	notes?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }

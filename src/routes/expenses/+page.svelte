@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { budget } from '$lib/stores/budget';
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
-	import { formatDKK } from '$lib/utils/currency';
+	import { formatCurrency } from '$lib/utils/currency';
 	import { getMonthlyAmount } from '$lib/utils/budget';
 	import { UNCATEGORIZED, isUncategorized } from '$lib/types';
-	import type { RecurringItem } from '$lib/types';
+	import type { RecurringItem, Currency } from '$lib/types';
+	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
+	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
+	import { t } from '$lib/i18n';
 
 	let showModal = $state(false);
 	let editingItem = $state<RecurringItem | null>(null);
@@ -14,7 +18,9 @@
 	let formFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
 	let formStartDate = $state(new Date().toISOString().split('T')[0]);
 	let formIsActive = $state(true);
+	let formNotes = $state('');
 	let showMoreOptions = $state(false);
+	let formErrors = $state<ValidationErrors>({});
 
 	const expenseItems = $derived($recurringItems.filter((i) => i.type === 'expense'));
 
@@ -26,6 +32,8 @@
 		formFrequency = 'monthly';
 		formStartDate = new Date().toISOString().split('T')[0];
 		formIsActive = true;
+		formNotes = '';
+		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
 	}
@@ -33,26 +41,34 @@
 	function openEditModal(item: RecurringItem) {
 		editingItem = item;
 		formName = item.name;
-		formAmount = item.amount;
+		formAmount = item.amountInCents / 100;
 		formCategoryId = item.categoryId;
 		formFrequency = item.frequency;
 		formStartDate = new Date(item.startDate).toISOString().split('T')[0];
 		formIsActive = item.isActive;
+		formNotes = item.notes ?? '';
+		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
 	}
 
 	async function handleSubmit() {
-		if (!formName.trim()) return;
+		const nameErr = validateName(formName, $t);
+		const amountErr = validateAmount(formAmount, $t);
+		formErrors = {};
+		if (nameErr) formErrors.name = nameErr;
+		if (amountErr) formErrors.amount = amountErr;
+		if (nameErr || amountErr) return;
 
 		const data = {
 			name: formName,
-			amount: formAmount,
+			amountInCents: Math.round(formAmount * 100),
 			categoryId: formCategoryId,
 			type: 'expense' as const,
 			frequency: formFrequency,
 			startDate: new Date(formStartDate),
-			isActive: formIsActive
+			isActive: formIsActive,
+			notes: formNotes || undefined
 		};
 
 		if (editingItem) {
@@ -64,49 +80,85 @@
 	}
 
 	async function handleDelete(id: string) {
-		if (confirm('Er du sikker på at du vil slette denne udgift?')) {
+		if (confirm($t.entry.deleteConfirmExpense)) {
 			await recurringItems.remove(id);
 		}
 	}
 
+	async function handleDuplicate(id: string) {
+		await recurringItems.duplicate(id);
+	}
+
 	function getFrequencyLabel(freq: string): string {
 		const labels: Record<string, string> = {
-			daily: '/dag',
-			weekly: '/uge',
-			monthly: '/md',
-			yearly: '/år'
+			daily: $t.common.perDay,
+			weekly: $t.common.perWeek,
+			monthly: $t.common.perMonth,
+			yearly: $t.common.perYear
 		};
 		return labels[freq] || '';
 	}
 
 	function resolveCategory(item: RecurringItem) {
 		if (isUncategorized(item.categoryId)) {
-			return { name: 'Ingen kategori', color: '#9ca3af' };
+			return { name: $t.common.uncategorized, color: '#9ca3af' };
 		}
 		const cat = $categories.find((c) => c.id === item.categoryId);
-		return { name: cat?.name || 'Ukendt', color: cat?.color || '#9ca3af' };
+		return { name: cat?.name || $t.common.unknown, color: cat?.color || '#9ca3af' };
+	}
+
+	function fmt(amount: number): string {
+		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
+	}
+
+	if (typeof localStorage !== 'undefined') {
+		const saved = localStorage.getItem('displayCurrency');
+		if (saved && saved !== 'none') displayCurrency.set(saved as Currency);
 	}
 </script>
 
 <svelte:head>
-	<title>Budget Planner - Udgifter</title>
+	<title>{$t.nav.expenses} - Budget Planner</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-bold">Udgifter</h2>
-		<button
-			onclick={openAddModal}
-			class="btn-primary"
-		>
-			Tilføj udgift
-		</button>
+		<div class="flex items-center gap-3">
+			<button onclick={() => history.back()} class="btn-ghost p-0.5" aria-label="Back">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+			</button>
+			<h2 class="text-2xl font-bold">{$t.nav.expenses}</h2>
+		</div>
+		<div class="flex items-center gap-2">
+			<select
+				value={$displayCurrency ?? 'none'}
+				onchange={(e) => {
+					const val = (e.target as HTMLSelectElement).value;
+					displayCurrency.set(val === 'none' ? null : val as Currency);
+					localStorage.setItem('displayCurrency', val);
+				}}
+				class="px-2 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
+			>
+				<option value="none">Auto ({$budget?.currency ?? 'DKK'})</option>
+				<option value="DKK">DKK</option>
+				<option value="EUR">EUR</option>
+				<option value="USD">USD</option>
+				<option value="SEK">SEK</option>
+				<option value="NOK">NOK</option>
+			</select>
+			<button
+				onclick={openAddModal}
+				class="btn-primary"
+			>
+				{$t.entry.addExpense}
+			</button>
+		</div>
 	</div>
 
 	{#if expenseItems.length === 0}
 		<div class="text-center py-12 text-gray-500">
-			<p>Ingen udgifter endnu.</p>
-			<p class="mt-2">Tilføj din første udgift for at komme i gang.</p>
+			<p>{$t.entry.noItems}</p>
+			<p class="mt-2">{$t.entry.createFirstExpense}</p>
 		</div>
 	{:else}
 		{@const grouped = Object.entries(
@@ -124,7 +176,7 @@
 					<div class="w-3 h-3 rounded-full" style="background-color: {color}"></div>
 					<span class="font-semibold">{catName}</span>
 					<span class="text-sm text-gray-500">
-						({items.length} {items.length === 1 ? 'element' : 'elementer'})
+						({items.length} {items.length === 1 ? $t.common.item : $t.common.items})
 					</span>
 				</div>
 				<div class="divide-y divide-[var(--color-border)]">
@@ -133,24 +185,35 @@
 							<div>
 								<span class="font-medium">{item.name}</span>
 								{#if !item.isActive}
-									<span class="ml-2 text-xs text-gray-400">(Inaktiv)</span>
+									<span class="ml-2 text-xs text-gray-400">({$t.common.inactive})</span>
 								{/if}
 							</div>
 							<div class="flex items-center gap-4">
 								<span class="font-mono text-[var(--color-expense)]">
-									{formatDKK(item.amount)}{getFrequencyLabel(item.frequency)}
+									{fmt(item.amountInCents)}{getFrequencyLabel(item.frequency)}
 								</span>
+								<button
+									onclick={() => handleDuplicate(item.id)}
+									class="btn-icon"
+									aria-label="{$t.entry.duplicateItem}"
+									title="{$t.entry.duplicateItem}"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+										<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+										<path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+									</svg>
+								</button>
 								<button
 									onclick={() => openEditModal(item)}
 									class="btn-sm btn-outline"
 								>
-									Rediger
+									{$t.common.edit}
 								</button>
 								<button
 									onclick={() => handleDelete(item.id)}
 									class="btn-sm btn-outline-danger"
 								>
-									Slet
+									{$t.common.delete}
 								</button>
 							</div>
 						</div>
@@ -165,56 +228,62 @@
 	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 		<div class="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md mx-4">
 			<h3 class="text-lg font-semibold mb-4">
-				{editingItem ? 'Rediger udgift' : 'Tilføj udgift'}
+				{editingItem ? $t.entry.editExpense : $t.entry.addExpense}
 			</h3>
 			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
 				<div>
-					<label for="exp-name" class="block text-sm font-medium mb-1">Navn</label>
-					<input
-						id="exp-name"
-						type="text"
-						bind:value={formName}
-						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-						placeholder="f.eks. Netflix, Husleje"
-						required
-					/>
-				</div>
+					<label for="exp-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
+				<input
+					id="exp-name"
+					type="text"
+					bind:value={formName}
+					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+					placeholder="{$t.field.notesPlaceholder}"
+					required
+				/>
+				{#if formErrors.name}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{formErrors.name}</p>
+				{/if}
+			</div>
+			<div>
+				<label for="exp-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
+				<input
+					id="exp-amount"
+					type="number"
+					bind:value={formAmount}
+					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+					min="0"
+					step="0.01"
+					required
+				/>
+				{#if formErrors.amount}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{formErrors.amount}</p>
+				{/if}
+			</div>
 				<div>
-					<label for="exp-amount" class="block text-sm font-medium mb-1">Beløb (kr.)</label>
-					<input
-						id="exp-amount"
-						type="number"
-						bind:value={formAmount}
-						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-						min="0"
-						step="1"
-						required
-					/>
-				</div>
-				<div>
-					<label for="exp-category" class="block text-sm font-medium mb-1">Kategori</label>
+					<label for="exp-category" class="block text-sm font-medium mb-1">{$t.field.category}</label>
 					<select
 						id="exp-category"
 						bind:value={formCategoryId}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 					>
-						<option value={UNCATEGORIZED}>Ingen kategori</option>
+						<option value={UNCATEGORIZED}>{$t.common.uncategorized}</option>
 						{#each $categories as cat}
 							<option value={cat.id}>{cat.name}</option>
 						{/each}
 					</select>
 				</div>
 				<div>
-					<label for="exp-frequency" class="block text-sm font-medium mb-1">Frekvens</label>
+					<label for="exp-frequency" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
 					<select
 						id="exp-frequency"
 						bind:value={formFrequency}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 					>
-						<option value="daily">Dagligt</option>
-						<option value="weekly">Ugentligt</option>
-						<option value="monthly">Månedligt</option>
-						<option value="yearly">Årligt</option>
+						<option value="daily">{$t.frequency.daily}</option>
+						<option value="weekly">{$t.frequency.weekly}</option>
+						<option value="monthly">{$t.frequency.monthly}</option>
+						<option value="yearly">{$t.frequency.yearly}</option>
 					</select>
 				</div>
 
@@ -223,19 +292,29 @@
 					onclick={() => (showMoreOptions = !showMoreOptions)}
 					class="text-sm text-[var(--color-primary)] hover:underline"
 				>
-					{showMoreOptions ? '▲ Færre indstillinger' : '▼ Flere indstillinger'}
+					{showMoreOptions ? '▲ ' + $t.common.fewerOptions : '▼ ' + $t.common.moreOptions}
 				</button>
 
 				{#if showMoreOptions}
 					<div class="space-y-4 pt-2 border-t border-[var(--color-border)]">
 						<div>
-							<label for="exp-startdate" class="block text-sm font-medium mb-1">Startdato</label>
+							<label for="exp-startdate" class="block text-sm font-medium mb-1">{$t.field.startDate}</label>
 							<input
 								id="exp-startdate"
 								type="date"
 								bind:value={formStartDate}
 								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							/>
+						</div>
+						<div>
+							<label for="exp-notes" class="block text-sm font-medium mb-1">{$t.field.notes}</label>
+							<textarea
+								id="exp-notes"
+								bind:value={formNotes}
+								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+								placeholder="{$t.field.notesPlaceholder}"
+								rows="2"
+							></textarea>
 						</div>
 						<div class="flex items-center gap-2">
 							<input
@@ -244,7 +323,7 @@
 								id="exp-isActive"
 								class="w-4 h-4"
 							/>
-							<label for="exp-isActive" class="text-sm">Aktiv</label>
+							<label for="exp-isActive" class="text-sm">{$t.common.active}</label>
 						</div>
 					</div>
 				{/if}
@@ -255,13 +334,13 @@
 						onclick={() => (showModal = false)}
 						class="btn-outline"
 					>
-						Annuller
+						{$t.common.cancel}
 					</button>
 					<button
 						type="submit"
 						class="btn-primary"
 					>
-						{editingItem ? 'Gem' : 'Tilføj'}
+						{editingItem ? $t.common.save : $t.entry.addExpense}
 					</button>
 				</div>
 			</form>

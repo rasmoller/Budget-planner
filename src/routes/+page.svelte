@@ -2,7 +2,8 @@
 	import { budget } from '$lib/stores/budget';
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
-	import { formatDKK } from '$lib/utils/currency';
+	import { formatCurrency } from '$lib/utils/currency';
+	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 	import {
 		calculateMonthSummary,
 		getMonthKey,
@@ -11,8 +12,11 @@
 		isItemActiveInMonth
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
+	import SummaryCards from '$lib/components/SummaryCards.svelte';
 	import { UNCATEGORIZED } from '$lib/types';
-	import type { RecurringItem, CategoryGroup } from '$lib/types';
+	import type { RecurringItem, CategoryGroup, Currency } from '$lib/types';
+	import { openAllBudgets } from '$lib/stores/dialogs';
+	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
 
 	const currentYear = new Date().getFullYear();
 	const monthKeys = generateMonthKeys(currentYear);
@@ -30,19 +34,26 @@
 
 	let catFormName = $state('');
 	let catFormColor = $state('#6366f1');
+	let catFormErrors = $state<ValidationErrors>({});
 
 	let itemFormCategoryId = $state('');
 	let itemFormType = $state<'income' | 'expense'>('expense');
 	let itemFormName = $state('');
 	let itemFormAmount = $state(0);
 	let itemFormFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+	let itemFormNotes = $state('');
+	let itemFormErrors = $state<ValidationErrors>({});
 
 	let expandedCategories = $state(new Set<string>());
-
 	let draggedCategoryId = $state<string | null>(null);
 	let displayOrder = $state<string[]>([]);
 	let originalOrder = $state<string[]>([]);
 	let isDragging = $state(false);
+
+	if (typeof localStorage !== 'undefined') {
+		const saved = localStorage.getItem('displayCurrency');
+		if (saved && saved !== 'none') displayCurrency.set(saved as Currency);
+	}
 
 	const defaultColors = [
 		'#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f97316',
@@ -53,7 +64,7 @@
 		calculateMonthSummary($recurringItems, $categories, selectedMonth)
 	);
 
-	let allCategoryGroups = $derived(() => {
+	let allCategoryGroups = $derived.by(() => {
 		if (!summary) return [];
 		const existingIds = new Set(summary.categories.map((g) => g.categoryId));
 		const emptyGroups: CategoryGroup[] = $categories
@@ -78,13 +89,14 @@
 	}
 
 	function getFrequencyShort(freq: string): string {
-		return { daily: '/dag', weekly: '/uge', monthly: '/md', yearly: '/år' }[freq] || '';
+		return { daily: $t.common.perDay, weekly: $t.common.perWeek, monthly: $t.common.perMonth, yearly: $t.common.perYear }[freq] || '';
 	}
 
 	function openAddCategory() {
 		editingCategoryId = null;
 		catFormName = '';
 		catFormColor = '#6366f1';
+		catFormErrors = {};
 		catDialog?.showModal();
 	}
 
@@ -92,6 +104,7 @@
 		editingCategoryId = id;
 		catFormName = name;
 		catFormColor = color;
+		catFormErrors = {};
 		catDialog?.showModal();
 	}
 
@@ -102,6 +115,8 @@
 		itemFormName = '';
 		itemFormAmount = 0;
 		itemFormFrequency = 'monthly';
+		itemFormNotes = '';
+		itemFormErrors = {};
 		itemDialog?.showModal();
 	}
 
@@ -110,8 +125,10 @@
 		itemFormCategoryId = item.categoryId;
 		itemFormType = item.type;
 		itemFormName = item.name;
-		itemFormAmount = item.amount;
+		itemFormAmount = item.amountInCents / 100;
 		itemFormFrequency = item.frequency;
+		itemFormNotes = item.notes ?? '';
+		itemFormErrors = {};
 		itemDialog?.showModal();
 	}
 
@@ -121,7 +138,12 @@
 	}
 
 	async function handleSaveCategory() {
-		if (!catFormName.trim()) return;
+		const nameErr = validateName(catFormName, $t);
+		catFormErrors = {};
+		if (nameErr) {
+			catFormErrors = { name: nameErr };
+			return;
+		}
 		if (editingCategoryId) {
 			await categories.update(editingCategoryId, { name: catFormName, color: catFormColor });
 		} else {
@@ -132,23 +154,31 @@
 	}
 
 	async function handleSaveItem() {
-		if (!itemFormName.trim()) return;
+		const nameErr = validateName(itemFormName, $t);
+		const amountErr = validateAmount(itemFormAmount, $t);
+		itemFormErrors = {};
+		if (nameErr) itemFormErrors.name = nameErr;
+		if (amountErr) itemFormErrors.amount = amountErr;
+		if (nameErr || amountErr) return;
+		const amountInOre = Math.round(itemFormAmount * 100);
 		if (editingItemId) {
 			await recurringItems.update(editingItemId, {
 				name: itemFormName,
-				amount: itemFormAmount,
+				amountInCents: amountInOre,
 				type: itemFormType,
-				frequency: itemFormFrequency
+				frequency: itemFormFrequency,
+				notes: itemFormNotes || undefined
 			});
 		} else {
 			await recurringItems.add({
 				name: itemFormName,
-				amount: itemFormAmount,
+				amountInCents: amountInOre,
 				categoryId: itemFormCategoryId,
 				type: itemFormType,
 				frequency: itemFormFrequency,
 				startDate: new Date(),
-				isActive: true
+				isActive: true,
+				notes: itemFormNotes || undefined
 			});
 		}
 		itemDialog?.close();
@@ -167,6 +197,14 @@
 		}
 		deleteDialog?.close();
 		deleteTarget = null;
+	}
+
+	async function handleDuplicateCategory(categoryId: string) {
+		await categories.duplicate(categoryId);
+	}
+
+	async function handleDuplicateItem(itemId: string) {
+		await recurringItems.duplicate(itemId);
 	}
 
 	function getItemsOfType(group: CategoryGroup, type: 'income' | 'expense'): RecurringItem[] {
@@ -191,7 +229,7 @@
 	function handleDragStart(e: DragEvent, categoryId: string) {
 		draggedCategoryId = categoryId;
 		isDragging = true;
-		const currentGroups = sortCategories(allCategoryGroups());
+		const currentGroups = sortCategories(allCategoryGroups);
 		const ids = currentGroups.map((g) => g.categoryId);
 		displayOrder = [...ids];
 		originalOrder = [...ids];
@@ -241,6 +279,16 @@
 		displayOrder = [];
 		originalOrder = [];
 	}
+
+	function fmt(amount: number): string {
+		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
+	}
+
+	function changeDisplayCurrency(e: Event) {
+		const val = (e.target as HTMLSelectElement).value as Currency | 'none';
+		displayCurrency.set(val === 'none' ? null : val);
+		localStorage.setItem('displayCurrency', val);
+	}
 </script>
 
 <svelte:head>
@@ -248,11 +296,33 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-bold">{$t.nav.dashboard}</h2>
+	<div class="flex items-center justify-end gap-2 -mt-4 mb-2">
+		{#if $budget}
+			<button
+				onclick={() => openAllBudgets.update((n) => n + 1)}
+				class="flex items-center gap-1 px-3 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] hover:bg-[var(--color-border)]/30 transition-colors text-sm"
+			>
+				{$budget.name}
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+				</svg>
+			</button>
+		{/if}
+		<select
+			value={$displayCurrency ?? 'none'}
+			onchange={changeDisplayCurrency}
+			class="px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
+		>
+			<option value="none">Auto ({$budget?.currency ?? 'DKK'})</option>
+			<option value="DKK">DKK</option>
+			<option value="EUR">EUR</option>
+			<option value="USD">USD</option>
+			<option value="SEK">SEK</option>
+			<option value="NOK">NOK</option>
+		</select>
 		<select
 			bind:value={selectedMonth}
-			class="px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
+			class="px-3 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-sm"
 		>
 			{#each monthKeys as mk}
 				<option value={mk}>
@@ -263,18 +333,8 @@
 	</div>
 
 	<div class="space-y-3">
-		<div class="flex items-center justify-between">
-			<h3 class="text-lg font-semibold">{$t.nav.categories}</h3>
-			<button
-				onclick={openAddCategory}
-				class="btn-pill"
-			>
-				+ {$t.budget.addCategory}
-			</button>
-		</div>
-
-		{#if allCategoryGroups().length > 0}
-			{@const sorted = sortCategories(allCategoryGroups())}
+		{#if allCategoryGroups.length > 0}
+			{@const sorted = sortCategories(allCategoryGroups)}
 			{#each sorted as group (group.categoryId)}
 				{@const isExpanded = expandedCategories.has(group.categoryId)}
 				{@const incItems = getItemsOfType(group, 'income')}
@@ -310,41 +370,65 @@
 								<span class="text-xs text-gray-500">({group.items.length})</span>
 							</div>
 							<div class="flex items-center gap-4 font-mono text-sm">
-								<span style="color: var(--color-income)">+{formatDKK(group.incomeTotal)}</span>
-								<span style="color: var(--color-expense)">-{formatDKK(group.expenseTotal)}</span>
+								<span style="color: var(--color-income)">+{fmt(group.incomeTotal)}</span>
+								<span style="color: var(--color-expense)">-{fmt(group.expenseTotal)}</span>
 								<span class="font-semibold" style="color: {group.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">
-									{formatDKK(group.balance)}
+									{fmt(group.balance)}
 								</span>
 							</div>
 						</button>
-					<button
-						onclick={() => openEditCategory(group.categoryId, group.categoryName, group.categoryColor)}
-						class="btn-icon mr-2"
-						aria-label="Rediger kategori"
-					>
+					<div class="flex items-center gap-1 mr-2">
+						<button
+							onclick={() => handleDuplicateCategory(group.categoryId)}
+							class="btn-icon"
+							aria-label="{$t.category.duplicateCategory}"
+							title="{$t.category.duplicateCategory}"
+						>
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-								<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+								<path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
 							</svg>
 						</button>
+						<button
+							onclick={() => openEditCategory(group.categoryId, group.categoryName, group.categoryColor)}
+							class="btn-icon"
+							aria-label={$t.category.editCategory}
+						>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								</svg>
+							</button>
+					</div>
 					</div>
 
 					{#if isExpanded}
 						<div class="border-t border-[var(--color-border)]">
 							{#if incItems.length > 0}
 								<div class="px-4 pt-3 pb-1">
-									<p class="text-xs font-semibold mb-2" style="color: var(--color-income)">{$t.budget.totalIncome}</p>
+									<p class="text-xs font-semibold mb-2" style="color: var(--color-income)">{$t.summary.totalIncome}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each incItems as item}
 											<div class="flex items-center justify-between py-2">
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-income)">
-														{formatDKK(item.amount)}{getFrequencyShort(item.frequency)}
+														{fmt(item.amountInCents)}{getFrequencyShort(item.frequency)}
 													</span>
+													<button
+														onclick={() => handleDuplicateItem(item.id)}
+														class="btn-icon p-1"
+														aria-label="{$t.entry.duplicateItem}"
+														title="{$t.entry.duplicateItem}"
+													>
+														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+															<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+															<path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+														</svg>
+													</button>
 													<button
 														onclick={() => openEditItem(item)}
 														class="btn-icon p-1"
-														aria-label="Rediger"
+														aria-label={$t.common.edit}
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -359,19 +443,30 @@
 
 							{#if expItems.length > 0}
 								<div class="px-4 pt-3 pb-1">
-									<p class="text-xs font-semibold mb-2" style="color: var(--color-expense)">{$t.budget.totalExpenses}</p>
+									<p class="text-xs font-semibold mb-2" style="color: var(--color-expense)">{$t.summary.totalExpenses}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each expItems as item}
 											<div class="flex items-center justify-between py-2">
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-expense)">
-														-{formatDKK(item.amount)}{getFrequencyShort(item.frequency)}
+														-{fmt(item.amountInCents)}{getFrequencyShort(item.frequency)}
 													</span>
+													<button
+														onclick={() => handleDuplicateItem(item.id)}
+														class="btn-icon p-1"
+														aria-label="{$t.entry.duplicateItem}"
+														title="{$t.entry.duplicateItem}"
+													>
+														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+															<path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+															<path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+														</svg>
+													</button>
 													<button
 														onclick={() => openEditItem(item)}
 														class="btn-icon p-1"
-														aria-label="Rediger"
+														aria-label={$t.common.edit}
 													>
 														<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
 															<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -389,13 +484,13 @@
 									onclick={() => openAddItem(group.categoryId, 'income')}
 									class="flex-1 btn-pill text-[var(--color-income)] hover:bg-[var(--color-income)]/10"
 								>
-									+ {$t.budget.income}
+									+ {$t.summary.income}
 								</button>
 								<button
 									onclick={() => openAddItem(group.categoryId, 'expense')}
 									class="flex-1 btn-pill text-[var(--color-expense)] hover:bg-[var(--color-expense)]/10"
 								>
-									+ {$t.budget.expense}
+									+ {$t.summary.expense}
 								</button>
 							</div>
 						</div>
@@ -404,61 +499,51 @@
 			{/each}
 		{:else if allDataLoaded}
 			<div class="text-center py-12 text-gray-500">
-				<p class="mb-3">{$t.budget.noCategories}</p>
-				<p>{$t.budget.createFirst}</p>
+				<p class="mb-3">{$t.category.noCategories}</p>
+				<p>{$t.category.createFirst}</p>
 			</div>
 		{/if}
+
+		<div class="flex justify-center">
+			<button
+				onclick={openAddCategory}
+				class="btn-pill"
+			>
+				+ {$t.category.addCategory}
+			</button>
+		</div>
 	</div>
 
 	{#if summary}
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.totalIncome}</p>
-				<p class="text-2xl font-bold" style="color: var(--color-income)">
-					{formatDKK(summary.totalIncome)}
-				</p>
-			</div>
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.totalExpenses}</p>
-				<p class="text-2xl font-bold" style="color: var(--color-expense)">
-					{formatDKK(summary.totalExpenses)}
-				</p>
-			</div>
-			<div class="p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
-				<p class="text-sm text-gray-500 mb-1">{$t.budget.balance}</p>
-				<p
-					class="text-2xl font-bold"
-					style="color: {summary.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}"
-				>
-					{formatDKK(summary.balance)}
-				</p>
-			</div>
-		</div>
+		<SummaryCards income={summary.totalIncome} expense={summary.totalExpenses} {fmt} />
 	{/if}
 </div>
 
 <dialog bind:this={catDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50 place-self-center">
 	<div class="p-6">
-		<h3 class="text-lg font-semibold mb-4">{editingCategoryId ? $t.budget.editCategory : $t.budget.addCategory}</h3>
+		<h3 class="text-lg font-semibold mb-4">{editingCategoryId ? $t.category.editCategory : $t.category.addCategory}</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleSaveCategory(); }} class="space-y-4">
 			<div>
-				<label for="bc-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
+				<label for="bc-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
 				<input
 					id="bc-name"
 					type="text"
 					bind:value={catFormName}
 					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)]"
-					placeholder="{$t.budget.newCategoryPlaceholder}"
+					placeholder="{$t.field.newCategoryPlaceholder}"
 					required
 				/>
+				{#if catFormErrors.name}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{catFormErrors.name}</p>
+				{/if}
 			</div>
 			<div>
-				<label for="bc-color" class="block text-sm font-medium mb-1">{$t.budget.color}</label>
-				<div id="bc-color" class="flex gap-2 flex-wrap">
+				<label for="bc-color" class="block text-sm font-medium mb-1">{$t.field.color}</label>
+				<div id="bc-color" class="flex gap-2 flex-wrap items-center">
 					{#each defaultColors as color}
 						<button
 							type="button"
-							aria-label="Farve {color}"
+							aria-label={$t.common.customColor + ' ' + color}
 							onclick={() => (catFormColor = color)}
 							class="w-7 h-7 rounded-full border-2 transition-transform {catFormColor === color
 								? 'border-[var(--color-text)] scale-110'
@@ -466,17 +551,30 @@
 							style="background-color: {color}"
 						></button>
 					{/each}
+					<label
+						for="bc-custom-color"
+						class="w-7 h-7 rounded-full border-2 border-dashed border-[var(--color-border)] cursor-pointer flex items-center justify-center text-[10px] text-gray-400 hover:border-[var(--color-text)] transition-colors"
+						title={$t.common.customColor}
+					>
+						+
+					</label>
+					<input
+						id="bc-custom-color"
+						type="color"
+						bind:value={catFormColor}
+						class="w-7 h-7 rounded-full cursor-pointer border-0 p-0"
+					/>
 				</div>
 			</div>
 		<div class="flex justify-between pt-2">
 			{#if editingCategoryId}
-				<button type="button" onclick={() => { catDialog?.close(); openDeleteConfirm('category', editingCategoryId!, catFormName); }} class="btn-danger">{$t.budget.delete}</button>
+				<button type="button" onclick={() => { catDialog?.close(); openDeleteConfirm('category', editingCategoryId!, catFormName); }} class="btn-danger">{$t.common.delete}</button>
 			{:else}
 				<div></div>
 			{/if}
 			<div class="flex gap-2">
-				<button type="button" onclick={() => catDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+				<button type="button" onclick={() => catDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.common.save}</button>
 			</div>
 		</div>
 		</form>
@@ -487,8 +585,8 @@
 	<div class="p-6">
 		<h3 class="text-lg font-semibold mb-4">
 			{editingItemId
-				? (itemFormType === 'income' ? $t.budget.editIncome : $t.budget.editExpense)
-				: (itemFormType === 'income' ? $t.budget.addIncome : $t.budget.addExpense)
+				? (itemFormType === 'income' ? $t.entry.editIncome : $t.entry.editExpense)
+				: (itemFormType === 'income' ? $t.entry.addIncome : $t.entry.addExpense)
 			}
 		</h3>
 		<form onsubmit={(e) => { e.preventDefault(); handleSaveItem(); }} class="space-y-4">
@@ -501,7 +599,7 @@
 						: 'hover:bg-[var(--color-border)]/30'}"
 					style={itemFormType === 'income' ? 'background-color: var(--color-income)' : ''}
 				>
-					{$t.budget.income}
+					{$t.summary.income}
 				</button>
 				<button
 					type="button"
@@ -511,19 +609,25 @@
 						: 'hover:bg-[var(--color-border)]/30'}"
 					style={itemFormType === 'expense' ? 'background-color: var(--color-expense)' : ''}
 				>
-					{$t.budget.expense}
+					{$t.summary.expense}
 				</button>
 			</div>
 			<div>
-				<label for="bi-name" class="block text-sm font-medium mb-1">{$t.budget.name}</label>
-				<input id="bi-name" type="text" bind:value={itemFormName} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" placeholder="f.eks. Netflix, Løn" required />
+				<label for="bi-name" class="block text-sm font-medium mb-1">{$t.field.name}</label>
+				<input id="bi-name" type="text" bind:value={itemFormName} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" placeholder={$t.field.notesPlaceholder} required />
+				{#if itemFormErrors.name}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.name}</p>
+				{/if}
 			</div>
 			<div>
-				<label for="bi-amount" class="block text-sm font-medium mb-1">{$t.budget.amount} (kr.)</label>
-				<input id="bi-amount" type="number" bind:value={itemFormAmount} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" min="0" step="1" required />
+				<label for="bi-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
+				<input id="bi-amount" type="number" bind:value={itemFormAmount} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" min="0" step="0.01" required />
+				{#if itemFormErrors.amount}
+					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.amount}</p>
+				{/if}
 			</div>
 			<div>
-				<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.budget.frequency}</label>
+				<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
 				<select id="bi-freq" bind:value={itemFormFrequency} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]">
 					<option value="daily">{$t.frequency.daily}</option>
 					<option value="weekly">{$t.frequency.weekly}</option>
@@ -531,15 +635,25 @@
 					<option value="yearly">{$t.frequency.yearly}</option>
 				</select>
 			</div>
+			<div>
+				<label for="bi-notes" class="block text-sm font-medium mb-1">{$t.field.notes}</label>
+				<textarea
+					id="bi-notes"
+					bind:value={itemFormNotes}
+					class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+					placeholder="{$t.field.notesPlaceholder}"
+					rows="2"
+				></textarea>
+			</div>
 		<div class="flex justify-between pt-2">
 			{#if editingItemId}
-				<button type="button" onclick={() => { itemDialog?.close(); openDeleteConfirm('item', editingItemId!, itemFormName); }} class="btn-danger">{$t.budget.delete}</button>
+				<button type="button" onclick={() => { itemDialog?.close(); openDeleteConfirm('item', editingItemId!, itemFormName); }} class="btn-danger">{$t.common.delete}</button>
 			{:else}
 				<div></div>
 			{/if}
 			<div class="flex gap-2">
-				<button type="button" onclick={() => itemDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-				<button type="submit" class="btn-primary">{$t.budget.save}</button>
+				<button type="button" onclick={() => itemDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+				<button type="submit" class="btn-primary">{$t.common.save}</button>
 			</div>
 		</div>
 		</form>
@@ -548,14 +662,16 @@
 
 <dialog bind:this={deleteDialog} class="rounded-lg p-0 max-w-sm w-full backdrop:bg-black/50 place-self-center">
 	<div class="p-6">
-		<h3 class="text-lg font-semibold mb-2">{$t.budget.confirmDelete}</h3>
+		<h3 class="text-lg font-semibold mb-2">{$t.common.confirmDelete}</h3>
 		{#if deleteTarget?.type === 'category'}
-			<p class="text-sm text-[var(--color-danger)] mb-2">{$t.budget.deleteCategoryWarning}</p>
+			<p class="text-sm text-[var(--color-danger)] mb-2">{$t.category.deleteCategoryWarning}</p>
 		{/if}
 		<p class="text-sm text-gray-500 mb-4">{deleteTarget?.name}</p>
 		<div class="flex justify-end gap-2">
-			<button onclick={() => deleteDialog?.close()} class="btn-outline">{$t.budget.cancel}</button>
-			<button onclick={handleDelete} class="btn-danger">{$t.budget.delete}</button>
+			<button onclick={() => deleteDialog?.close()} class="btn-outline">{$t.common.cancel}</button>
+			<button onclick={handleDelete} class="btn-danger">{$t.common.delete}</button>
 		</div>
 	</div>
 </dialog>
+
+

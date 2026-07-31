@@ -4,13 +4,13 @@ import type { RecurringItem, MonthSummary, CategoryGroup } from '$lib/types';
 export function getMonthlyAmount(item: RecurringItem): number {
 	switch (item.frequency) {
 		case 'daily':
-			return item.amount * 30;
+			return item.amountInCents * 30;
 		case 'weekly':
-			return item.amount * 4.33;
+			return item.amountInCents * 4.33;
 		case 'monthly':
-			return item.amount;
+			return item.amountInCents;
 		case 'yearly':
-			return item.amount / 12;
+			return item.amountInCents / 12;
 	}
 }
 
