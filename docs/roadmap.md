@@ -11,8 +11,7 @@ Small gaps to close before starting new features:
 | Item | Status | Notes |
 |------|--------|-------|
 | Overview year-view empty state | 📋 | `overview/+page.svelte` renders nothing when there are no categories/items; charts page already handles this via `hasData` + `noItems` |
-| Tests for new shared code | 📋 | `viewMode.ts`, `ActionBar.svelte`, `NestedDonut.svelte`, `SummaryCards.svelte` are untested and missing from `docs/test-plan.md` |
-| `ui.test.ts` plan (5 tests) | 📋 | Planned in test-plan but never written (`toggleLanguage`, `setLanguage`, `toggleCategory`) |
+| `validation.test.ts` plan (15 tests) | 📋 | Planned in test-plan but never written |
 
 ---
 
@@ -82,7 +81,7 @@ From `charts-rework-plan.md`:
 
 | Area | Issue |
 |------|-------|
-| **Test coverage** | ⚠️ 37 planned tests — see `docs/test-plan.md` |
+| **Test coverage** | ⚠️ 22 planned tests (`validation`, `dialogs`, types, DB schema) — see `docs/test-plan.md` |
 | **Exchange rates** | No error handling if the Frankfurter API is unreachable; `fetchExchangeRates` is called but failed requests are not handled |
 | **Charts page** | Line chart not yet implemented; two-column layout pending |
 | **Chart.js** | New dependency (~20-30 KB tree-shaken); center-text plugin and nested-dataset alignment are custom code that needs test coverage |
