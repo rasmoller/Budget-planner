@@ -14,6 +14,8 @@ export const da = {
     edit: "Rediger",
     duplicate: "Duplikér",
     confirmDelete: "Er du sikker?",
+    deleteBudgetWarning:
+      "Alle kategorier og elementer i budgettet vil også blive slettet.",
     validationError: "Ret venligst fejlene før du gemmer",
     active: "Aktiv",
     inactive: "Inaktiv",
@@ -61,9 +63,11 @@ export const da = {
     newBudgetPlaceholder: "Mit Budget",
     selectBudget: "Vælg budget",
     allBudgets: "Alle budgetter",
-    deleteBudgetWarning:
-      "Alle kategorier og elementer i budgettet vil også blive slettet.",
     duplicateBudget: "Duplikér budget",
+    renameBudget: "Omdøb budget",
+    name: "Navn",
+    save: "Gem",
+    cancel: "Annuller",
     archive: "Arkivér",
     unarchive: "Gendan",
     archived: "Arkiveret",
@@ -94,12 +98,6 @@ export const da = {
     deleteCategoryWarning:
       "Hvis kategorien slettes, slettes alle elementer i kategorien også.",
     noCategories: "Ingen kategorier endnu",
-    allBudgets: "Alle budgetter",
-    newCategoryPlaceholder: "f.eks. Forsikring, Husleje",
-    newBudgetPlaceholder: "Mit Budget",
-    duplicate: "Duplikér",
-    duplicateBudget: "Duplikér budget",
-    renameBudget: "Omdøb budget",
     duplicateCategory: "Duplikér kategori",
     createFirstCategory: "Opret din første kategori for at komme i gang.",
     deleteConfirmCategory:

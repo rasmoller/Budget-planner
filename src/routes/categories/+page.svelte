@@ -133,7 +133,7 @@
 				</div>
 				<div>
 			<div role="group" aria-labelledby="cat-color-label">
-				<label id="cat-color-label" class="block text-sm font-medium mb-1">{$t.field.color}</label>
+				<span id="cat-color-label" class="block text-sm font-medium mb-1">{$t.field.color}</span>
 				<div class="flex gap-2 flex-wrap items-center">
 						{#each defaultColors as color}
 							<button

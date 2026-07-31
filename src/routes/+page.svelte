@@ -285,7 +285,7 @@
 	}
 
 	function changeDisplayCurrency(e: Event) {
-		const val = (e.target as HTMLSelectElement).value as Currency;
+		const val = (e.target as HTMLSelectElement).value as Currency | 'none';
 		displayCurrency.set(val === 'none' ? null : val);
 		localStorage.setItem('displayCurrency', val);
 	}

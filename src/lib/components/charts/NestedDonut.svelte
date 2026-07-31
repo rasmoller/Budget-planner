@@ -9,6 +9,8 @@
 
 	let { groups, currency = 'DKK' as Currency }: { groups: CategoryGroup[]; currency?: Currency } = $props();
 
+	type OuterEntry = { value: number; color: string; label: string; type: 'incomes' | 'expenses' };
+
 		const centerTextPlugin = {
 		id: 'centerText',
 		afterDraw(chart: any) {
@@ -33,7 +35,7 @@
 						const pct = grandTotal > 0 ? ((entry.value / grandTotal) * 100).toFixed(1) : '0';
 						let label = entry.label;
 						if (active.datasetIndex === 2) {
-							const typeLabel = $t.summary[(entry as any).type];
+							const typeLabel = $t.summary[(entry as OuterEntry).type];
 							label = `${entry.label} (${typeLabel})`;
 						}
 						ctx.font = 'bold 14px system-ui, sans-serif';
@@ -73,7 +75,7 @@
 	// Outer ring: income then expense per category, same category order
 	const outerEntries = $derived(
 		groups.flatMap((g) => {
-			const out: Array<{ value: number; color: string; label: string; type: 'incomes' | 'expenses' }> = [];
+			const out: OuterEntry[] = [];
 			if (g.incomeTotal > 0) out.push({ value: g.incomeTotal, color: g.categoryColor, label: g.categoryName, type: 'incomes' });
 			if (g.expenseTotal > 0) out.push({ value: g.expenseTotal, color: g.categoryColor, label: g.categoryName, type: 'expenses' });
 			return out;
