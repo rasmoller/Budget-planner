@@ -86,7 +86,5 @@ From `charts-rework-plan.md`:
 | **Charts page** | Line chart not yet implemented; two-column layout pending |
 | **Chart.js** | New dependency (~20-30 KB tree-shaken); center-text plugin and nested-dataset alignment are custom code that needs test coverage |
 | **DB migrations** | Schema upgrades v1→v2→v3 exist but are untested |
-| **One-time purchases** | Schema has no `isOneTime` or `date` field for one-off items |
-| **Future-dated changes** | Implemented (branch `feat/future-dated-changes`, awaiting merge to `Staging`) |
 | **Variable amounts** | No `min`/`max` or `estimated` field on items |
 | **Search** | No search/filter UI for items |
