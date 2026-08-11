@@ -19,6 +19,7 @@
 	import type { RecurringItem, CategoryGroup, Currency, ScheduledChange } from '$lib/types';
 	import { openAllBudgets } from '$lib/stores/dialogs';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
+	import { formatDateDMY } from '$lib/utils/date';
 
 	const currentYear = new Date().getFullYear();
 	const monthKeys = generateMonthKeys(currentYear);
@@ -364,7 +365,7 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="flex items-center justify-end gap-2 -mt-4 mb-2">
+	<div class="flex flex-wrap items-center justify-end gap-2 -mt-4 mb-2">
 		{#if $budget}
 			<button
 				onclick={() => openAllBudgets.update((n) => n + 1)}
@@ -427,17 +428,17 @@
 								<path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
 							</svg>
 						</div>
-						<button
-							onclick={() => toggleCategory(group.categoryId)}
-							class="flex-1 flex items-center justify-between p-4 text-left rounded-l-lg transition-colors"
-						>
-							<div class="flex items-center gap-3">
-								<span class="text-gray-400 text-xs">{isExpanded ? '▼' : '▶'}</span>
-								<div class="w-3 h-3 rounded-full" style="background-color: {group.categoryColor}"></div>
-								<span class="font-medium">{group.categoryName}</span>
-								<span class="text-xs text-gray-500">({group.items.length})</span>
-							</div>
-							<div class="flex items-center gap-4 font-mono text-sm">
+					<button
+						onclick={() => toggleCategory(group.categoryId)}
+						class="flex-1 flex items-center justify-between gap-2 p-4 text-left rounded-l-lg transition-colors min-w-0"
+					>
+						<div class="flex items-center gap-3 flex-1 min-w-0">
+							<span class="text-gray-400 text-xs shrink-0">{isExpanded ? '▼' : '▶'}</span>
+							<div class="w-3 h-3 rounded-full shrink-0" style="background-color: {group.categoryColor}"></div>
+							<span class="font-medium truncate">{group.categoryName}</span>
+							<span class="text-xs text-gray-500 shrink-0">({group.items.length})</span>
+						</div>
+						<div class="flex items-center gap-2 sm:gap-4 font-mono text-sm shrink-0">
 								<span style="color: var(--color-income)">+{fmt(group.incomeTotal)}</span>
 								<span style="color: var(--color-expense)">-{fmt(group.expenseTotal)}</span>
 								<span class="font-semibold" style="color: {group.balance >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">
@@ -476,10 +477,10 @@
 									<p class="text-xs font-semibold mb-2" style="color: var(--color-income)">{$t.summary.totalIncome}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each incItems as item}
-											<div class="flex items-center justify-between py-2">
-												<span class="text-sm">{item.name}</span>
-												<div class="flex items-center gap-2">
-													<span class="font-mono text-sm" style="color: var(--color-income)">
+											<div class="flex items-center justify-between gap-2 py-2">
+												<span class="text-sm min-w-0 truncate">{item.name}</span>
+												<div class="flex items-center gap-1 sm:gap-2 shrink-0">
+													<span class="font-mono text-sm shrink-0" style="color: var(--color-income)">
 														{formatItemAmount(item)}
 													</span>
 													<button
@@ -523,10 +524,10 @@
 									<p class="text-xs font-semibold mb-2" style="color: var(--color-expense)">{$t.summary.totalExpenses}</p>
 									<div class="divide-y divide-[var(--color-border)]">
 										{#each expItems as item}
-											<div class="flex items-center justify-between py-2">
-												<span class="text-sm">{item.name}</span>
-												<div class="flex items-center gap-2">
-													<span class="font-mono text-sm" style="color: var(--color-expense)">
+											<div class="flex items-center justify-between gap-2 py-2">
+												<span class="text-sm min-w-0 truncate">{item.name}</span>
+												<div class="flex items-center gap-1 sm:gap-2 shrink-0">
+													<span class="font-mono text-sm shrink-0" style="color: var(--color-expense)">
 														-{formatItemAmount(item)}
 													</span>
 													<button
@@ -780,6 +781,7 @@
 						id="bi-date"
 						type="date"
 						bind:value={itemFormDate}
+						data-display={formatDateDMY(itemFormDate)}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 						required
 					/>
@@ -820,6 +822,7 @@
 											id={change.id + '-date'}
 											type="date"
 											bind:value={change.effectiveDate}
+											data-display={formatDateDMY(change.effectiveDate)}
 											class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
 										/>
 									</div>

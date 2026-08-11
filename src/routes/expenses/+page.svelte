@@ -9,6 +9,7 @@
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 	import { t } from '$lib/i18n';
+	import { formatDateDMY } from '$lib/utils/date';
 
 	let showModal = $state(false);
 	let editingItem = $state<RecurringItem | null>(null);
@@ -183,14 +184,14 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
-		<div class="flex items-center gap-3">
-			<button onclick={() => history.back()} class="btn-ghost p-0.5" aria-label="Back">
+	<div class="flex flex-wrap items-center justify-between gap-2">
+		<div class="flex items-center gap-3 min-w-0">
+			<button onclick={() => history.back()} class="btn-ghost p-0.5 shrink-0" aria-label="Back">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
 			</button>
 			<h2 class="text-2xl font-bold">{$t.nav.expenses}</h2>
 		</div>
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-2 flex-wrap">
 			<select
 				value={$displayCurrency ?? 'none'}
 				onchange={(e) => {
@@ -242,15 +243,15 @@
 				</div>
 				<div class="divide-y divide-[var(--color-border)]">
 					{#each items as item}
-						<div class="flex items-center justify-between p-4">
-							<div>
+						<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-4">
+							<div class="min-w-0">
 								<span class="font-medium">{item.name}</span>
 								{#if !item.isActive}
 									<span class="ml-2 text-xs text-gray-400">({$t.common.inactive})</span>
 								{/if}
 							</div>
-							<div class="flex items-center gap-4">
-							<span class="font-mono text-[var(--color-expense)]">
+							<div class="flex items-center gap-2 sm:gap-4 flex-wrap">
+							<span class="font-mono text-[var(--color-expense)] shrink-0">
 								{formatItemAmount(item)}
 							</span>
 								<button
@@ -286,8 +287,8 @@
 </div>
 
 {#if showModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-		<div class="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md mx-4">
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md max-h-[90dvh] overflow-y-auto">
 			<h3 class="text-lg font-semibold mb-4">
 				{editingItem ? $t.entry.editExpense : $t.entry.addExpense}
 			</h3>
@@ -402,6 +403,7 @@
 							id="exp-date"
 							type="date"
 							bind:value={formDate}
+							data-display={formatDateDMY(formDate)}
 							class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							required
 						/>
@@ -447,6 +449,7 @@
 												id={change.id + '-date'}
 												type="date"
 												bind:value={change.effectiveDate}
+												data-display={formatDateDMY(change.effectiveDate)}
 												class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
 											/>
 										</div>
@@ -505,6 +508,7 @@
 								id="exp-startdate"
 								type="date"
 								bind:value={formStartDate}
+								data-display={formatDateDMY(formStartDate)}
 								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							/>
 						</div>

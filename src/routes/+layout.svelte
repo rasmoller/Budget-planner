@@ -332,15 +332,15 @@
 
 <div class="min-h-screen flex flex-col">
 	<header class="bg-[var(--color-header)]">
-		<div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+		<div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
 			<a href="/" class="text-xl font-semibold text-[var(--color-header-text)] hover:opacity-90 transition-opacity">
 				Budget Planner
 			</a>
-			<div class="flex items-center gap-3">
+			<div class="flex items-center gap-2 sm:gap-3 flex-wrap">
 				{#if $budget}
 					<a
 						href="/"
-						class="btn-header
+						class="btn-header hidden sm:inline-flex
 							{currentPath === '/' ? '!bg-white !text-[var(--color-header)]' : ''}"
 					>
 						{$t.nav.dashboard}
@@ -400,7 +400,7 @@
 		</div>
 	</header>
 
-	<main class="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+	<main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
 		{@render children()}
 	</main>
 

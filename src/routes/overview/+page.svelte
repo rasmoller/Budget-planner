@@ -164,14 +164,14 @@
 					<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
 						<button
 							onclick={() => toggleCategory(group.categoryId)}
-							class="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-border)] rounded-lg transition-colors"
+							class="w-full flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 text-left hover:bg-[var(--color-border)] rounded-lg transition-colors"
 						>
-							<div class="flex items-center gap-2">
+							<div class="flex items-center gap-2 flex-wrap">
 								<span class="text-gray-500">{isExpanded ? '▼' : '▶'}</span>
 								<div class="w-3 h-3 rounded-full" style="background-color: {group.categoryColor}"></div>
 								<span class="font-medium">{group.categoryName}</span>
 							</div>
-							<div class="flex items-center gap-3 font-mono text-sm">
+							<div class="flex items-center gap-2 sm:gap-3 font-mono text-sm flex-wrap">
 								{#if group.incomeTotal > 0}
 									<span style="color: var(--color-income)">+{fmt(group.incomeTotal)}</span>
 								{/if}
@@ -190,9 +190,9 @@
 									<div>
 										<button
 											onclick={() => toggleItem(item.id)}
-											class="w-full flex items-center justify-between p-3 pl-10 text-left hover:bg-[var(--color-border)] transition-colors"
+											class="w-full flex flex-wrap items-center justify-between gap-x-2 gap-y-1 p-3 pl-8 sm:pl-10 text-left hover:bg-[var(--color-border)] transition-colors"
 										>
-											<div class="flex items-center gap-2">
+											<div class="flex items-center gap-2 flex-wrap">
 												<span class="text-gray-400 text-sm">{itemExpanded ? '▼' : '▶'}</span>
 												<span class="text-xs px-1.5 py-0.5 rounded {item.type === 'income' ? 'bg-[var(--color-income)]/10 text-[var(--color-income)]' : 'bg-[var(--color-expense)]/10 text-[var(--color-expense)]'}">
 													{item.type === 'income' ? $t.summary.income : $t.summary.expense}
@@ -200,7 +200,7 @@
 												<span>{item.name}</span>
 												<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
 											</div>
-											<span class="font-mono text-sm" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
+											<span class="font-mono text-sm shrink-0" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
 												{item.type === 'expense' ? '-' : ''}{formatMonthlyAmount(item)}{$t.common.perMonth}
 											</span>
 										</button>
@@ -209,7 +209,7 @@
 												{#each monthKeys as mk, i}
 													{@const effective = getEffectiveItem(item, mk)}
 													{@const active = isItemActiveInMonth(effective, mk)}
-													<div class="flex justify-between px-14 py-2 text-sm {i % 2 === 0 ? 'bg-[var(--color-surface)]' : ''}">
+													<div class="flex justify-between gap-2 px-6 sm:px-14 py-2 text-sm {i % 2 === 0 ? 'bg-[var(--color-surface)]' : ''}">
 														<span class="{active ? '' : 'text-gray-400'}">
 															{$t.months[i]} {currentYear}
 														</span>
@@ -235,10 +235,10 @@
 				{#each yearSummaries as ms, i}
 					<button
 						onclick={() => { selectedMonth = ms.month; viewMode.set('month'); }}
-						class="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-border)] transition-colors"
+						class="w-full flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 text-left hover:bg-[var(--color-border)] transition-colors"
 					>
 						<span>{$t.months[i]} {currentYear}</span>
-						<div class="flex gap-4">
+						<div class="flex gap-2 sm:gap-4 flex-wrap">
 							<span class="font-mono text-sm" style="color: var(--color-income)">
 								{fmt(ms.totalIncome)}
 							</span>
@@ -270,14 +270,14 @@
 							<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
 								<button
 									onclick={() => toggleCategory(group.categoryId + '-month')}
-									class="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-border)] rounded-lg transition-colors"
+									class="w-full flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 text-left hover:bg-[var(--color-border)] rounded-lg transition-colors"
 								>
-									<div class="flex items-center gap-2">
+									<div class="flex items-center gap-2 flex-wrap">
 										<span class="text-gray-500">{isExpanded ? '▼' : '▶'}</span>
 										<div class="w-3 h-3 rounded-full" style="background-color: {group.categoryColor}"></div>
 										<span class="font-medium">{group.categoryName}</span>
 									</div>
-									<div class="flex items-center gap-3 font-mono text-sm">
+									<div class="flex items-center gap-2 sm:gap-3 font-mono text-sm flex-wrap">
 										{#if group.incomeTotal > 0}
 											<span style="color: var(--color-income)">+{fmt(group.incomeTotal)}</span>
 										{/if}
@@ -292,15 +292,15 @@
 								{#if isExpanded}
 									<div class="border-t border-[var(--color-border)] divide-y divide-[var(--color-border)]">
 										{#each group.items as item}
-											<div class="flex justify-between p-3 pl-10">
-												<span>
+											<div class="flex justify-between gap-2 p-3 pl-8 sm:pl-10">
+												<span class="min-w-0">
 													<span class="text-xs px-1.5 py-0.5 rounded {item.type === 'income' ? 'bg-[var(--color-income)]/10 text-[var(--color-income)]' : 'bg-[var(--color-expense)]/10 text-[var(--color-expense)]'}">
 														{item.type === 'income' ? $t.overview.incomeShort : $t.overview.expenseShort}
 													</span>
 													{item.name}
 													<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
 												</span>
-												<span class="font-mono" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
+												<span class="font-mono shrink-0" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
 													{item.type === 'expense' ? '-' : ''}{formatMonthlyAmount(item)}
 												</span>
 											</div>
