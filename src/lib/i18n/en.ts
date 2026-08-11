@@ -117,6 +117,8 @@ export const en = {
     oneTimeHint: 'A single purchase, not a recurring item',
     variable: 'Variable amount',
     variableHint: 'Amount varies month to month, e.g. groceries',
+    standard: 'Standard',
+    standardHint: 'Fixed recurring amount',
     deleteConfirmExpense: 'Are you sure you want to delete this expense?',
     deleteConfirmIncome: 'Are you sure you want to delete this income?',
     createFirstExpense: 'Add your first expense to get started.',

@@ -43,9 +43,8 @@
 	let itemFormName = $state('');
 	let itemFormAmount = $state(0);
 	let itemFormFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
-	let itemFormIsOneTime = $state(false);
+	let itemFormPostKind = $state<'standard' | 'oneTime' | 'variable'>('standard');
 	let itemFormDate = $state('');
-	let itemFormIsVariable = $state(false);
 	let itemFormMin = $state('');
 	let itemFormMax = $state('');
 	let itemFormNotes = $state('');
@@ -136,9 +135,8 @@
 		itemFormName = '';
 		itemFormAmount = 0;
 		itemFormFrequency = 'monthly';
-		itemFormIsOneTime = false;
+		itemFormPostKind = 'standard';
 		itemFormDate = new Date().toISOString().split('T')[0];
-		itemFormIsVariable = false;
 		itemFormMin = '';
 		itemFormMax = '';
 		itemFormNotes = '';
@@ -154,11 +152,10 @@
 		itemFormName = item.name;
 		itemFormAmount = item.amountInCents / 100;
 		itemFormFrequency = item.frequency;
-		itemFormIsOneTime = item.isOneTime ?? false;
+		itemFormPostKind = item.isOneTime ? 'oneTime' : item.isVariable ? 'variable' : 'standard';
 		itemFormDate = item.date
 			? new Date(item.date).toISOString().split('T')[0]
 			: new Date(item.startDate).toISOString().split('T')[0];
-		itemFormIsVariable = item.isVariable ?? false;
 		itemFormMin = item.minAmountInCents !== undefined ? String(item.minAmountInCents / 100) : '';
 		itemFormMax = item.maxAmountInCents !== undefined ? String(item.maxAmountInCents / 100) : '';
 		itemFormNotes = item.notes ?? '';
@@ -216,11 +213,11 @@
 				amountInCents: amountInOre,
 				type: itemFormType,
 				frequency: itemFormFrequency,
-				isOneTime: itemFormIsOneTime,
-				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
-				isVariable: itemFormIsVariable,
-				minAmountInCents: itemFormIsVariable && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
-				maxAmountInCents: itemFormIsVariable && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
+				isOneTime: itemFormPostKind === 'oneTime',
+				date: itemFormPostKind === 'oneTime' ? new Date(itemFormDate) : undefined,
+				isVariable: itemFormPostKind === 'variable',
+				minAmountInCents: itemFormPostKind === 'variable' && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
+				maxAmountInCents: itemFormPostKind === 'variable' && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -233,11 +230,11 @@
 				frequency: itemFormFrequency,
 				startDate: new Date(),
 				isActive: true,
-				isOneTime: itemFormIsOneTime,
-				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
-				isVariable: itemFormIsVariable,
-				minAmountInCents: itemFormIsVariable && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
-				maxAmountInCents: itemFormIsVariable && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
+				isOneTime: itemFormPostKind === 'oneTime',
+				date: itemFormPostKind === 'oneTime' ? new Date(itemFormDate) : undefined,
+				isVariable: itemFormPostKind === 'variable',
+				minAmountInCents: itemFormPostKind === 'variable' && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
+				maxAmountInCents: itemFormPostKind === 'variable' && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -709,64 +706,74 @@
 				{/if}
 			</div>
 			<div>
-				<label for="bi-amount" class="block text-sm font-medium mb-1">{itemFormIsVariable ? $t.field.estimate : $t.field.amount}</label>
+				<label for="bi-amount" class="block text-sm font-medium mb-1">{itemFormPostKind === 'variable' ? $t.field.estimate : $t.field.amount}</label>
 				<input id="bi-amount" type="number" bind:value={itemFormAmount} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" min="0" step="0.01" required />
 				{#if itemFormErrors.amount}
 					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.amount}</p>
 				{/if}
 			</div>
-			<div class="flex items-center gap-2">
-				<input
-					id="bi-onetime"
-					type="checkbox"
-					bind:checked={itemFormIsOneTime}
-					class="w-4 h-4"
-				/>
-				<label for="bi-onetime" class="text-sm font-medium">{$t.entry.oneTime}</label>
-				<span class="text-xs text-gray-500">{$t.entry.oneTimeHint}</span>
-			</div>
-			{#if !itemFormIsOneTime}
-				<div class="flex items-center gap-2">
-					<input
-						id="bi-variable"
-						type="checkbox"
-						bind:checked={itemFormIsVariable}
-						class="w-4 h-4"
-					/>
-					<label for="bi-variable" class="text-sm font-medium">{$t.entry.variable}</label>
-					<span class="text-xs text-gray-500">{$t.entry.variableHint}</span>
+			<div>
+				<div class="grid grid-cols-3 gap-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
+					<button
+						type="button"
+						onclick={() => (itemFormPostKind = 'standard')}
+						class="py-1.5 text-sm font-medium rounded-md transition-colors {itemFormPostKind === 'standard' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+					>
+						{$t.entry.standard}
+					</button>
+					<button
+						type="button"
+						onclick={() => (itemFormPostKind = 'oneTime')}
+						class="py-1.5 text-sm font-medium rounded-md transition-colors {itemFormPostKind === 'oneTime' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+					>
+						{$t.entry.oneTime}
+					</button>
+					<button
+						type="button"
+						onclick={() => (itemFormPostKind = 'variable')}
+						class="py-1.5 text-sm font-medium rounded-md transition-colors {itemFormPostKind === 'variable' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+					>
+						{$t.entry.variable}
+					</button>
 				</div>
-				{#if itemFormIsVariable}
-					<div class="grid grid-cols-2 gap-2">
-						<div>
-							<label for="bi-min" class="block text-xs font-medium mb-1">{$t.field.min}</label>
-							<input
-								id="bi-min"
-								type="number"
-								min="0"
-								step="0.01"
-								bind:value={itemFormMin}
-								class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
-								placeholder="{$t.field.min}"
-							/>
-						</div>
-						<div>
-							<label for="bi-max" class="block text-xs font-medium mb-1">{$t.field.max}</label>
-							<input
-								id="bi-max"
-								type="number"
-								min="0"
-								step="0.01"
-								bind:value={itemFormMax}
-								class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
-								placeholder="{$t.field.max}"
-							/>
-						</div>
+				<p class="text-xs text-gray-500 mt-1">
+					{itemFormPostKind === 'oneTime'
+						? $t.entry.oneTimeHint
+						: itemFormPostKind === 'variable'
+							? $t.entry.variableHint
+							: $t.entry.standardHint}
+				</p>
+			</div>
+			{#if itemFormPostKind === 'variable'}
+				<div class="grid grid-cols-2 gap-2">
+					<div>
+						<label for="bi-min" class="block text-xs font-medium mb-1">{$t.field.min}</label>
+						<input
+							id="bi-min"
+							type="number"
+							min="0"
+							step="0.01"
+							bind:value={itemFormMin}
+							class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+							placeholder="{$t.field.min}"
+						/>
 					</div>
-					<p class="text-xs text-gray-500">{$t.field.rangeHint}</p>
-				{/if}
+					<div>
+						<label for="bi-max" class="block text-xs font-medium mb-1">{$t.field.max}</label>
+						<input
+							id="bi-max"
+							type="number"
+							min="0"
+							step="0.01"
+							bind:value={itemFormMax}
+							class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+							placeholder="{$t.field.max}"
+						/>
+					</div>
+				</div>
+				<p class="text-xs text-gray-500">{$t.field.rangeHint}</p>
 			{/if}
-			{#if itemFormIsOneTime}
+			{#if itemFormPostKind === 'oneTime'}
 				<div>
 					<label for="bi-date" class="block text-sm font-medium mb-1">{$t.field.date}</label>
 					<input

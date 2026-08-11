@@ -120,6 +120,8 @@ export const da = {
     oneTimeHint: "Et enkelt køb, ikke et gentagende element",
     variable: "Variabelt beløb",
     variableHint: "Beløbet varierer fra måned til måned, f.eks. dagligvarer",
+    standard: "Fast",
+    standardHint: "Fast gentagende beløb",
     deleteConfirmExpense:
       "Er du sikker på at du vil slette denne udgift?",
     deleteConfirmIncome:
