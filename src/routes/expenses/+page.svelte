@@ -335,25 +335,25 @@
 					</select>
 				</div>
 				<div>
-					<div class="grid grid-cols-3 gap-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
+					<div class="segmented">
 						<button
 							type="button"
 							onclick={() => (formPostKind = 'standard')}
-							class="py-1.5 text-sm font-medium rounded-md transition-colors {formPostKind === 'standard' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+							class="segmented-btn {formPostKind === 'standard' ? 'segmented-btn-active' : ''}"
 						>
 							{$t.entry.standard}
 						</button>
 						<button
 							type="button"
 							onclick={() => (formPostKind = 'oneTime')}
-							class="py-1.5 text-sm font-medium rounded-md transition-colors {formPostKind === 'oneTime' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+							class="segmented-btn {formPostKind === 'oneTime' ? 'segmented-btn-active' : ''}"
 						>
 							{$t.entry.oneTime}
 						</button>
 						<button
 							type="button"
 							onclick={() => (formPostKind = 'variable')}
-							class="py-1.5 text-sm font-medium rounded-md transition-colors {formPostKind === 'variable' ? 'bg-[var(--color-surface)] shadow-sm' : 'hover:bg-[var(--color-border)]/30 text-gray-500'}"
+							class="segmented-btn {formPostKind === 'variable' ? 'segmented-btn-active' : ''}"
 						>
 							{$t.entry.variable}
 						</button>
