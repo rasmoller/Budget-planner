@@ -9,7 +9,6 @@
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 	import { t } from '$lib/i18n';
-	import { formatDateDMY } from '$lib/utils/date';
 
 	let showModal = $state(false);
 	let editingItem = $state<RecurringItem | null>(null);
@@ -403,7 +402,6 @@
 							id="inc-date"
 							type="date"
 							bind:value={formDate}
-							data-display={formatDateDMY(formDate)}
 							class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							required
 						/>
@@ -449,7 +447,6 @@
 												id={change.id + '-date'}
 												type="date"
 												bind:value={change.effectiveDate}
-												data-display={formatDateDMY(change.effectiveDate)}
 												class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
 											/>
 										</div>
@@ -508,7 +505,6 @@
 								id="inc-startdate"
 								type="date"
 								bind:value={formStartDate}
-								data-display={formatDateDMY(formStartDate)}
 								class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 							/>
 						</div>

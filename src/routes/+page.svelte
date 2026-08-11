@@ -19,7 +19,6 @@
 	import type { RecurringItem, CategoryGroup, Currency, ScheduledChange } from '$lib/types';
 	import { openAllBudgets } from '$lib/stores/dialogs';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
-	import { formatDateDMY } from '$lib/utils/date';
 
 	const currentYear = new Date().getFullYear();
 	const monthKeys = generateMonthKeys(currentYear);
@@ -781,7 +780,6 @@
 						id="bi-date"
 						type="date"
 						bind:value={itemFormDate}
-						data-display={formatDateDMY(itemFormDate)}
 						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
 						required
 					/>
@@ -822,7 +820,6 @@
 											id={change.id + '-date'}
 											type="date"
 											bind:value={change.effectiveDate}
-											data-display={formatDateDMY(change.effectiveDate)}
 											class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
 										/>
 									</div>

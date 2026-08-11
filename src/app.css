@@ -125,28 +125,6 @@ input, select, textarea {
   color: var(--color-text);
 }
 
-input[type="date"] {
-  position: relative;
-}
-
-input[type="date"]::-webkit-datetime-edit {
-  color: transparent;
-}
-
-input[type="date"]::before {
-  content: attr(data-display);
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  padding: inherit;
-  color: var(--color-text);
-  pointer-events: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 option {
   background-color: var(--color-surface);
   color: var(--color-text);
