@@ -5,6 +5,7 @@
   --color-text: #1e293b;
   --color-border: #cbd5e1;
   --color-surface: #ffffff;
+  --color-segmented-muted: #64748b;
   --color-header: #1e3a5f;
   --color-header-text: #f0f4f8;
   --color-primary: #2563eb;
@@ -21,6 +22,7 @@
   --color-text: #e2e8f0;
   --color-border: #334155;
   --color-surface: #1e293b;
+  --color-segmented-muted: #cbd5e1;
   --color-header: #1e3a5f;
   --color-header-text: #f0f4f8;
   --color-primary: #3b82f6;
@@ -68,7 +70,7 @@ dialog {
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  color: var(--color-segmented-muted);
   transition:
     background-color 0.15s,
     color 0.15s,
