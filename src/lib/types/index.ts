@@ -44,6 +44,8 @@ export interface RecurringItem {
 	frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
 	startDate: Date;
 	isActive: boolean;
+	isOneTime?: boolean;
+	date?: Date;
 	notes?: string;
 	createdAt: Date;
 	updatedAt: Date;

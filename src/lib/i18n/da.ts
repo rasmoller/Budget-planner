@@ -45,6 +45,7 @@ export const da = {
     type: "Type",
     currency: "Valuta",
     notes: "Noter",
+    date: "Dato",
     notesPlaceholder: "f.eks. Betales den 1. hver måned",
     newCategoryPlaceholder: "f.eks. Forsikring, Husleje",
   },
@@ -81,7 +82,7 @@ export const da = {
     exportSuccess: "Budget eksporteret!",
     importSuccess: "Budget importeret!",
     importError: "Ugyldig fil",
-    csvHeader: "Navn;Beløb;Valuta;Type;Kategori;Frekvens;Startdato;Aktiv",
+    csvHeader: "Navn;Beløb;Valuta;Type;Kategori;Frekvens;Startdato;Aktiv;Engangs;Dato",
     csvYes: "Ja",
     csvNo: "Nej",
   },
@@ -111,6 +112,8 @@ export const da = {
     editIncome: "Rediger indtægt",
     noItems: "Ingen elementer endnu",
     duplicateItem: "Duplikér",
+    oneTime: "Engangskøb",
+    oneTimeHint: "Et enkelt køb, ikke et gentagende element",
     deleteConfirmExpense:
       "Er du sikker på at du vil slette denne udgift?",
     deleteConfirmIncome:

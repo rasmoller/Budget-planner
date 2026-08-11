@@ -225,6 +225,9 @@
 			const startDate = item.startDate instanceof Date
 				? item.startDate.toISOString().split('T')[0]
 				: new Date(item.startDate).toISOString().split('T')[0];
+			const itemDate = item.date
+				? (item.date instanceof Date ? item.date : new Date(item.date)).toISOString().split('T')[0]
+				: '';
 
 			return [
 				escapeCSV(item.name),
@@ -234,7 +237,9 @@
 				escapeCSV(catName),
 				freqMap[item.frequency] || item.frequency,
 				startDate,
-				item.isActive ? $t.budget.csvYes : $t.budget.csvNo
+				item.isActive ? $t.budget.csvYes : $t.budget.csvNo,
+				item.isOneTime ? $t.budget.csvYes : $t.budget.csvNo,
+				itemDate
 			].join(';');
 		});
 
@@ -291,7 +296,9 @@
 						amountInCents: item.amountInCents,
 						frequency: item.frequency,
 						startDate: new Date(item.startDate),
-						isActive: item.isActive
+						isActive: item.isActive,
+						isOneTime: item.isOneTime ?? false,
+						date: item.date ? new Date(item.date) : undefined
 					});
 				}
 

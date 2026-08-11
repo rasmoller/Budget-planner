@@ -16,6 +16,8 @@
 	let formAmount = $state(0);
 	let formCategoryId = $state(UNCATEGORIZED);
 	let formFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+	let formIsOneTime = $state(false);
+	let formDate = $state(new Date().toISOString().split('T')[0]);
 	let formStartDate = $state(new Date().toISOString().split('T')[0]);
 	let formIsActive = $state(true);
 	let formNotes = $state('');
@@ -30,6 +32,8 @@
 		formAmount = 0;
 		formCategoryId = UNCATEGORIZED;
 		formFrequency = 'monthly';
+		formIsOneTime = false;
+		formDate = new Date().toISOString().split('T')[0];
 		formStartDate = new Date().toISOString().split('T')[0];
 		formIsActive = true;
 		formNotes = '';
@@ -44,6 +48,10 @@
 		formAmount = item.amountInCents / 100;
 		formCategoryId = item.categoryId;
 		formFrequency = item.frequency;
+		formIsOneTime = item.isOneTime ?? false;
+		formDate = item.date
+			? new Date(item.date).toISOString().split('T')[0]
+			: new Date(item.startDate).toISOString().split('T')[0];
 		formStartDate = new Date(item.startDate).toISOString().split('T')[0];
 		formIsActive = item.isActive;
 		formNotes = item.notes ?? '';
@@ -68,6 +76,8 @@
 			frequency: formFrequency,
 			startDate: new Date(formStartDate),
 			isActive: formIsActive,
+			isOneTime: formIsOneTime,
+			date: formIsOneTime ? new Date(formDate) : undefined,
 			notes: formNotes || undefined
 		};
 
@@ -189,9 +199,9 @@
 								{/if}
 							</div>
 							<div class="flex items-center gap-4">
-								<span class="font-mono text-[var(--color-expense)]">
-									{fmt(item.amountInCents)}{getFrequencyLabel(item.frequency)}
-								</span>
+							<span class="font-mono text-[var(--color-expense)]">
+								{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyLabel(item.frequency)}
+							</span>
 								<button
 									onclick={() => handleDuplicate(item.id)}
 									class="btn-icon"
@@ -273,19 +283,42 @@
 						{/each}
 					</select>
 				</div>
-				<div>
-					<label for="exp-frequency" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
-					<select
-						id="exp-frequency"
-						bind:value={formFrequency}
-						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
-					>
-						<option value="daily">{$t.frequency.daily}</option>
-						<option value="weekly">{$t.frequency.weekly}</option>
-						<option value="monthly">{$t.frequency.monthly}</option>
-						<option value="yearly">{$t.frequency.yearly}</option>
-					</select>
+				<div class="flex items-center gap-2">
+					<input
+						id="exp-onetime"
+						type="checkbox"
+						bind:checked={formIsOneTime}
+						class="w-4 h-4"
+					/>
+					<label for="exp-onetime" class="text-sm font-medium">{$t.entry.oneTime}</label>
+					<span class="text-xs text-gray-500">{$t.entry.oneTimeHint}</span>
 				</div>
+				{#if formIsOneTime}
+					<div>
+						<label for="exp-date" class="block text-sm font-medium mb-1">{$t.field.date}</label>
+						<input
+							id="exp-date"
+							type="date"
+							bind:value={formDate}
+							class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+							required
+						/>
+					</div>
+				{:else}
+					<div>
+						<label for="exp-frequency" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
+						<select
+							id="exp-frequency"
+							bind:value={formFrequency}
+							class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+						>
+							<option value="daily">{$t.frequency.daily}</option>
+							<option value="weekly">{$t.frequency.weekly}</option>
+							<option value="monthly">{$t.frequency.monthly}</option>
+							<option value="yearly">{$t.frequency.yearly}</option>
+						</select>
+					</div>
+				{/if}
 
 				<button
 					type="button"
