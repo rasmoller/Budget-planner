@@ -291,7 +291,17 @@
 						amountInCents: item.amountInCents,
 						frequency: item.frequency,
 						startDate: new Date(item.startDate),
-						isActive: item.isActive
+						isActive: item.isActive,
+						futureChanges: Array.isArray(item.futureChanges)
+							? item.futureChanges.map((c: { id?: string; effectiveDate: string; amountInCents?: number; frequency?: string; isActive?: boolean; createdAt?: string }) => ({
+									id: c.id || crypto.randomUUID(),
+									effectiveDate: new Date(c.effectiveDate),
+									...(c.amountInCents !== undefined ? { amountInCents: c.amountInCents } : {}),
+									...(c.frequency !== undefined ? { frequency: c.frequency } : {}),
+									...(c.isActive !== undefined ? { isActive: c.isActive } : {}),
+									createdAt: c.createdAt ? new Date(c.createdAt) : new Date()
+								}))
+							: []
 					});
 				}
 

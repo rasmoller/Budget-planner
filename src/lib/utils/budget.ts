@@ -42,6 +42,29 @@ export function isItemActiveInMonth(item: RecurringItem, monthKey: string): bool
 	return year > itemYear || (year === itemYear && month >= itemMonth);
 }
 
+export function getEffectiveItem(item: RecurringItem, monthKey: string): RecurringItem {
+	const [year, month] = monthKey.split('-').map(Number);
+	const changes = (item.futureChanges ?? [])
+		.filter((change) => {
+			const d = new Date(change.effectiveDate);
+			const changeYear = d.getFullYear();
+			const changeMonth = d.getMonth() + 1;
+			return changeYear < year || (changeYear === year && changeMonth <= month);
+		})
+		.sort((a, b) => new Date(a.effectiveDate).getTime() - new Date(b.effectiveDate).getTime());
+
+	let effective: RecurringItem = item;
+	for (const change of changes) {
+		effective = {
+			...effective,
+			...(change.amountInCents !== undefined ? { amountInCents: change.amountInCents } : {}),
+			...(change.frequency !== undefined ? { frequency: change.frequency } : {}),
+			...(change.isActive !== undefined ? { isActive: change.isActive } : {})
+		};
+	}
+	return effective;
+}
+
 export function isIncomeItem(item: RecurringItem): boolean {
 	return item.type === 'income';
 }
@@ -56,7 +79,9 @@ export function calculateMonthSummary(
 	monthKey: string
 ): MonthSummary {
 	const [year, month] = monthKey.split('-').map(Number);
-	const activeItems = items.filter((item) => isItemActiveInMonth(item, monthKey));
+	const activeItems = items
+		.map((item) => getEffectiveItem(item, monthKey))
+		.filter((item) => isItemActiveInMonth(item, monthKey));
 
 	const categoryMap = new Map(categories.map((c) => [c.id, c]));
 	const grouped = new Map<string, CategoryGroup>();

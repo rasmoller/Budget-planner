@@ -6,6 +6,7 @@ import {
 	getYearFromKey,
 	generateMonthKeys,
 	isItemActiveInMonth,
+	getEffectiveItem,
 	isIncomeItem,
 	isExpenseItem,
 	calculateMonthSummary
@@ -127,6 +128,56 @@ describe('isItemActiveInMonth', () => {
 	});
 });
 
+describe('getEffectiveItem', () => {
+	function makeChange(overrides: Partial<import('$lib/types').ScheduledChange> = {}): import('$lib/types').ScheduledChange {
+		return {
+			id: 'change-1',
+			effectiveDate: new Date('2026-03-01'),
+			createdAt: new Date(),
+			...overrides
+		};
+	}
+
+	it('returns the item unchanged when there are no future changes', () => {
+		const item = makeItem({ amountInCents: 100000, futureChanges: [] });
+		const effective = getEffectiveItem(item, '2026-06');
+		expect(effective.amountInCents).toBe(100000);
+	});
+
+	it('applies an amount change that is effective in or before the month', () => {
+		const item = makeItem({
+			amountInCents: 100000,
+			futureChanges: [makeChange({ effectiveDate: new Date('2026-03-01'), amountInCents: 200000 })]
+		});
+		expect(getEffectiveItem(item, '2026-02').amountInCents).toBe(100000);
+		expect(getEffectiveItem(item, '2026-03').amountInCents).toBe(200000);
+		expect(getEffectiveItem(item, '2026-08').amountInCents).toBe(200000);
+	});
+
+	it('applies an isActive deactivation from the effective month onward', () => {
+		const item = makeItem({
+			isActive: true,
+			futureChanges: [makeChange({ effectiveDate: new Date('2026-05-01'), isActive: false })]
+		});
+		expect(getEffectiveItem(item, '2026-04').isActive).toBe(true);
+		expect(getEffectiveItem(item, '2026-05').isActive).toBe(false);
+		expect(isItemActiveInMonth(getEffectiveItem(item, '2026-05'), '2026-05')).toBe(false);
+	});
+
+	it('applies multiple changes in chronological order', () => {
+		const item = makeItem({
+			amountInCents: 100000,
+			futureChanges: [
+				makeChange({ id: 'c1', effectiveDate: new Date('2026-03-01'), amountInCents: 200000 }),
+				makeChange({ id: 'c2', effectiveDate: new Date('2026-07-01'), amountInCents: 300000 })
+			]
+		});
+		expect(getEffectiveItem(item, '2026-02').amountInCents).toBe(100000);
+		expect(getEffectiveItem(item, '2026-04').amountInCents).toBe(200000);
+		expect(getEffectiveItem(item, '2026-08').amountInCents).toBe(300000);
+	});
+});
+
 describe('isIncomeItem / isExpenseItem', () => {
 	it('isIncomeItem returns true for income type', () => {
 		expect(isIncomeItem(makeItem({ type: 'income' }))).toBe(true);
@@ -237,5 +288,47 @@ describe('calculateMonthSummary', () => {
 		expect(summary.month).toBe('2026-06');
 		expect(summary.year).toBe(2026);
 		expect(summary.monthNumber).toBe(5);
+	});
+
+	it('applies future-dated amount changes across months', () => {
+		const item = makeItem({
+			categoryId: 'cat-1',
+			type: 'expense',
+			amountInCents: 100000,
+			frequency: 'monthly',
+			futureChanges: [
+				{
+					id: 'c1',
+					effectiveDate: new Date('2026-07-01'),
+					amountInCents: 500000,
+					createdAt: new Date()
+				}
+			]
+		});
+		const june = calculateMonthSummary([item], categories, '2026-06');
+		expect(june.totalExpenses).toBe(100000);
+		const july = calculateMonthSummary([item], categories, '2026-07');
+		expect(july.totalExpenses).toBe(500000);
+	});
+
+	it('excludes items deactivated by a future change from later months', () => {
+		const item = makeItem({
+			categoryId: 'cat-1',
+			type: 'expense',
+			amountInCents: 100000,
+			frequency: 'monthly',
+			futureChanges: [
+				{
+					id: 'c1',
+					effectiveDate: new Date('2026-09-01'),
+					isActive: false,
+					createdAt: new Date()
+				}
+			]
+		});
+		const august = calculateMonthSummary([item], categories, '2026-08');
+		expect(august.totalExpenses).toBe(100000);
+		const september = calculateMonthSummary([item], categories, '2026-09');
+		expect(september.totalExpenses).toBe(0);
 	});
 });

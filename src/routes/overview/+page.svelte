@@ -6,7 +6,8 @@
 		calculateMonthSummary,
 		generateMonthKeys,
 		isItemActiveInMonth,
-		getMonthlyAmount
+		getMonthlyAmount,
+		getEffectiveItem
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
@@ -90,6 +91,7 @@
 
 	function getMonthTotals(items: RecurringItem[], mk: string): number {
 		return items
+			.map((item) => getEffectiveItem(item, mk))
 			.filter((item) => isItemActiveInMonth(item, mk))
 			.reduce((sum, item) => sum + getMonthlyAmount(item), 0);
 	}
@@ -195,13 +197,14 @@
 										{#if itemExpanded}
 											<div class="bg-[var(--color-bg)] border-t border-[var(--color-border)]">
 												{#each monthKeys as mk, i}
-													{@const active = isItemActiveInMonth(item, mk)}
+													{@const effective = getEffectiveItem(item, mk)}
+													{@const active = isItemActiveInMonth(effective, mk)}
 													<div class="flex justify-between px-14 py-2 text-sm {i % 2 === 0 ? 'bg-[var(--color-surface)]' : ''}">
 														<span class="{active ? '' : 'text-gray-400'}">
 															{$t.months[i]} {currentYear}
 														</span>
 														<span class="font-mono {active ? '' : 'text-gray-400'}">
-															{active ? fmt(getMonthlyAmount(item)) : '—'}
+															{active ? fmt(getMonthlyAmount(effective)) : '—'}
 														</span>
 													</div>
 												{/each}

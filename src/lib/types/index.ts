@@ -34,6 +34,16 @@ export function isUncategorized(id: string): boolean {
 	return id === UNCATEGORIZED;
 }
 
+export interface ScheduledChange {
+	id: string;
+	effectiveDate: Date;
+	amountInCents?: number;
+	frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+	isActive?: boolean;
+	notes?: string;
+	createdAt: Date;
+}
+
 export interface RecurringItem {
 	id: string;
 	budgetId: string;
@@ -44,6 +54,9 @@ export interface RecurringItem {
 	frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
 	startDate: Date;
 	isActive: boolean;
+	isOneTime?: boolean;
+	date?: Date;
+	futureChanges?: ScheduledChange[];
 	notes?: string;
 	createdAt: Date;
 	updatedAt: Date;
