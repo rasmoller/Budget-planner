@@ -58,11 +58,11 @@ From `TODO.md` — **Must** priority:
 
 ---
 
-## Phase 4 — Should-Have Features (💡 Planned)
+## Phase 4 — Should-Have Features
 
 | Feature | Priority | Description |
 |---------|----------|-------------|
-| **Variable post** | Should | Items with variable amounts (e.g., grocery budgets that change month-to-month) |
+| **Variable post** | ✅ Done | Items with variable amounts (e.g., grocery budgets that change month-to-month) — estimated amount used for planning, optional min/max range shown in the UI |
 
 ---
 
@@ -85,6 +85,5 @@ From `charts-rework-plan.md`:
 | **Exchange rates** | No error handling if the Frankfurter API is unreachable; `fetchExchangeRates` is called but failed requests are not handled |
 | **Charts page** | Line chart not yet implemented; two-column layout pending |
 | **Chart.js** | New dependency (~20-30 KB tree-shaken); center-text plugin and nested-dataset alignment are custom code that needs test coverage |
-| **DB migrations** | Schema upgrades v1→v2→v3 exist but are untested |
-| **Variable amounts** | No `min`/`max` or `estimated` field on items |
+| **DB migrations** | Schema upgrades v1→v5 exist but are untested |
 | **Search** | No search/filter UI for items |

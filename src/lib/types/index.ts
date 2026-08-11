@@ -56,6 +56,9 @@ export interface RecurringItem {
 	isActive: boolean;
 	isOneTime?: boolean;
 	date?: Date;
+	isVariable?: boolean;
+	minAmountInCents?: number;
+	maxAmountInCents?: number;
 	futureChanges?: ScheduledChange[];
 	notes?: string;
 	createdAt: Date;

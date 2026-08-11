@@ -38,6 +38,10 @@ export const da = {
   field: {
     name: "Navn",
     amount: "Beløb",
+    estimate: "Estimeret beløb",
+    min: "Min",
+    max: "Maks",
+    rangeHint: "Valgfrit — bruges kun til visning",
     category: "Kategori",
     frequency: "Frekvens",
     startDate: "Startdato",
@@ -82,7 +86,7 @@ export const da = {
     exportSuccess: "Budget eksporteret!",
     importSuccess: "Budget importeret!",
     importError: "Ugyldig fil",
-    csvHeader: "Navn;Beløb;Valuta;Type;Kategori;Frekvens;Startdato;Aktiv;Engangs;Dato",
+    csvHeader: "Navn;Beløb;Valuta;Type;Kategori;Frekvens;Startdato;Aktiv;Engangs;Dato;Variabel;Min;Maks",
     csvYes: "Ja",
     csvNo: "Nej",
   },
@@ -114,6 +118,8 @@ export const da = {
     duplicateItem: "Duplikér",
     oneTime: "Engangskøb",
     oneTimeHint: "Et enkelt køb, ikke et gentagende element",
+    variable: "Variabelt beløb",
+    variableHint: "Beløbet varierer fra måned til måned, f.eks. dagligvarer",
     deleteConfirmExpense:
       "Er du sikker på at du vil slette denne udgift?",
     deleteConfirmIncome:

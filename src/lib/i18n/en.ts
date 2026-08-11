@@ -37,6 +37,10 @@ export const en = {
   field: {
     name: 'Name',
     amount: 'Amount',
+    estimate: 'Estimated amount',
+    min: 'Min',
+    max: 'Max',
+    rangeHint: 'Optional — only used for display',
     category: 'Category',
     frequency: 'Frequency',
     startDate: 'Start date',
@@ -81,7 +85,7 @@ export const en = {
     exportSuccess: 'Budget exported!',
     importSuccess: 'Budget imported!',
     importError: 'Invalid file',
-    csvHeader: 'Name;Amount;Currency;Type;Category;Frequency;Start date;Active;One-time;Date',
+    csvHeader: 'Name;Amount;Currency;Type;Category;Frequency;Start date;Active;One-time;Date;Variable;Min;Max',
     csvYes: 'Yes',
     csvNo: 'No'
   },
@@ -111,6 +115,8 @@ export const en = {
     duplicateItem: 'Duplicate',
     oneTime: 'One-time',
     oneTimeHint: 'A single purchase, not a recurring item',
+    variable: 'Variable amount',
+    variableHint: 'Amount varies month to month, e.g. groceries',
     deleteConfirmExpense: 'Are you sure you want to delete this expense?',
     deleteConfirmIncome: 'Are you sure you want to delete this income?',
     createFirstExpense: 'Add your first expense to get started.',

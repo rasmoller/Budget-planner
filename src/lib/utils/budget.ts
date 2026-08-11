@@ -15,6 +15,31 @@ export function getMonthlyAmount(item: RecurringItem): number {
 	}
 }
 
+export function isVariableItem(item: RecurringItem): boolean {
+	return item.isVariable === true;
+}
+
+export function getItemAmountRange(item: RecurringItem): { min: number; max: number } {
+	const min = item.minAmountInCents ?? item.amountInCents;
+	const max = item.maxAmountInCents ?? item.amountInCents;
+	return { min: Math.min(min, max), max: Math.max(min, max) };
+}
+
+export function getMonthlyAmountRange(item: RecurringItem): { min: number; max: number } {
+	if (item.isOneTime) return getItemAmountRange(item);
+	const { min, max } = getItemAmountRange(item);
+	switch (item.frequency) {
+		case 'daily':
+			return { min: min * 30, max: max * 30 };
+		case 'weekly':
+			return { min: min * 4.33, max: max * 4.33 };
+		case 'monthly':
+			return { min, max };
+		case 'yearly':
+			return { min: min / 12, max: max / 12 };
+	}
+}
+
 export function getMonthKey(date: Date): string {
 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }

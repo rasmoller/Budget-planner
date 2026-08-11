@@ -239,7 +239,10 @@
 				startDate,
 				item.isActive ? $t.budget.csvYes : $t.budget.csvNo,
 				item.isOneTime ? $t.budget.csvYes : $t.budget.csvNo,
-				itemDate
+				itemDate,
+				item.isVariable ? $t.budget.csvYes : $t.budget.csvNo,
+				item.minAmountInCents !== undefined ? formatAmount(item.minAmountInCents) : '',
+				item.maxAmountInCents !== undefined ? formatAmount(item.maxAmountInCents) : ''
 			].join(';');
 		});
 
@@ -299,6 +302,9 @@
 						isActive: item.isActive,
 						isOneTime: item.isOneTime ?? false,
 						date: item.date ? new Date(item.date) : undefined,
+						isVariable: item.isVariable ?? false,
+						minAmountInCents: item.minAmountInCents,
+						maxAmountInCents: item.maxAmountInCents,
 						futureChanges: Array.isArray(item.futureChanges)
 							? item.futureChanges.map((c: { id?: string; effectiveDate: string; amountInCents?: number; frequency?: string; isActive?: boolean; createdAt?: string }) => ({
 									id: c.id || crypto.randomUUID(),

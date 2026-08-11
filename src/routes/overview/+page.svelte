@@ -7,7 +7,9 @@
 		generateMonthKeys,
 		isItemActiveInMonth,
 		getMonthlyAmount,
-		getEffectiveItem
+		getMonthlyAmountRange,
+		getEffectiveItem,
+		isVariableItem
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
@@ -104,6 +106,14 @@
 		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
 	}
 
+	function formatMonthlyAmount(item: RecurringItem): string {
+		if (isVariableItem(item)) {
+			const { min, max } = getMonthlyAmountRange(item);
+			return min === max ? `~${fmt(min)}` : `${fmt(min)}\u2013${fmt(max)}`;
+		}
+		return fmt(getMonthlyAmount(item));
+	}
+
 	if (typeof localStorage !== 'undefined') {
 		const saved = localStorage.getItem('displayCurrency');
 		if (saved && saved !== 'none') displayCurrency.set(saved as Currency);
@@ -191,7 +201,7 @@
 												<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
 											</div>
 											<span class="font-mono text-sm" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
-												{item.type === 'expense' ? '-' : ''}{fmt(getMonthlyAmount(item))}{$t.common.perMonth}
+												{item.type === 'expense' ? '-' : ''}{formatMonthlyAmount(item)}{$t.common.perMonth}
 											</span>
 										</button>
 										{#if itemExpanded}
@@ -204,7 +214,7 @@
 															{$t.months[i]} {currentYear}
 														</span>
 														<span class="font-mono {active ? '' : 'text-gray-400'}">
-															{active ? fmt(getMonthlyAmount(effective)) : '—'}
+															{active ? formatMonthlyAmount(effective) : '—'}
 														</span>
 													</div>
 												{/each}
@@ -291,7 +301,7 @@
 													<span class="text-xs text-gray-500">({formatFrequency(item.frequency)})</span>
 												</span>
 												<span class="font-mono" style="color: {item.type === 'income' ? 'var(--color-income)' : 'var(--color-expense)'}">
-													{item.type === 'expense' ? '-' : ''}{fmt(getMonthlyAmount(item))}
+													{item.type === 'expense' ? '-' : ''}{formatMonthlyAmount(item)}
 												</span>
 											</div>
 										{/each}

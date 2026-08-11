@@ -3,7 +3,7 @@
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
 	import { formatCurrency } from '$lib/utils/currency';
-	import { getMonthlyAmount } from '$lib/utils/budget';
+	import { getMonthlyAmount, getItemAmountRange, isVariableItem } from '$lib/utils/budget';
 	import { UNCATEGORIZED, isUncategorized } from '$lib/types';
 	import type { RecurringItem, Currency, ScheduledChange } from '$lib/types';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
@@ -18,6 +18,9 @@
 	let formFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
 	let formIsOneTime = $state(false);
 	let formDate = $state(new Date().toISOString().split('T')[0]);
+	let formIsVariable = $state(false);
+	let formMin = $state('');
+	let formMax = $state('');
 	let formStartDate = $state(new Date().toISOString().split('T')[0]);
 	let formIsActive = $state(true);
 	let formNotes = $state('');
@@ -48,6 +51,9 @@
 		formFrequency = 'monthly';
 		formIsOneTime = false;
 		formDate = new Date().toISOString().split('T')[0];
+		formIsVariable = false;
+		formMin = '';
+		formMax = '';
 		formStartDate = new Date().toISOString().split('T')[0];
 		formIsActive = true;
 		formNotes = '';
@@ -67,6 +73,9 @@
 		formDate = item.date
 			? new Date(item.date).toISOString().split('T')[0]
 			: new Date(item.startDate).toISOString().split('T')[0];
+		formIsVariable = item.isVariable ?? false;
+		formMin = item.minAmountInCents !== undefined ? String(item.minAmountInCents / 100) : '';
+		formMax = item.maxAmountInCents !== undefined ? String(item.maxAmountInCents / 100) : '';
 		formStartDate = new Date(item.startDate).toISOString().split('T')[0];
 		formIsActive = item.isActive;
 		formNotes = item.notes ?? '';
@@ -109,6 +118,9 @@
 			isActive: formIsActive,
 			isOneTime: formIsOneTime,
 			date: formIsOneTime ? new Date(formDate) : undefined,
+			isVariable: formIsVariable,
+			minAmountInCents: formIsVariable && formMin !== '' ? Math.round(parseFloat(formMin) * 100) : undefined,
+			maxAmountInCents: formIsVariable && formMax !== '' ? Math.round(parseFloat(formMax) * 100) : undefined,
 			futureChanges,
 			notes: formNotes || undefined
 		};
@@ -151,6 +163,16 @@
 
 	function fmt(amount: number): string {
 		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
+	}
+
+	function formatItemAmount(item: RecurringItem): string {
+		const freq = item.isOneTime ? '' : getFrequencyLabel(item.frequency);
+		if (isVariableItem(item)) {
+			const { min, max } = getItemAmountRange(item);
+			const text = min === max ? `~${fmt(min)}` : `${fmt(min)}\u2013${fmt(max)}`;
+			return text + freq;
+		}
+		return fmt(item.amountInCents) + freq;
 	}
 
 	if (typeof localStorage !== 'undefined') {
@@ -232,7 +254,7 @@
 							</div>
 							<div class="flex items-center gap-4">
 								<span class="font-mono text-[var(--color-income)]">
-									{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyLabel(item.frequency)}
+									{formatItemAmount(item)}
 								</span>
 								<button
 									onclick={() => handleDuplicate(item.id)}
@@ -288,7 +310,7 @@
 				{/if}
 			</div>
 			<div>
-				<label for="inc-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
+				<label for="inc-amount" class="block text-sm font-medium mb-1">{formIsVariable ? $t.field.estimate : $t.field.amount}</label>
 				<input
 					id="inc-amount"
 					type="number"
@@ -325,6 +347,47 @@
 					<label for="inc-onetime" class="text-sm font-medium">{$t.entry.oneTime}</label>
 					<span class="text-xs text-gray-500">{$t.entry.oneTimeHint}</span>
 				</div>
+				{#if !formIsOneTime}
+					<div class="flex items-center gap-2">
+						<input
+							id="inc-variable"
+							type="checkbox"
+							bind:checked={formIsVariable}
+							class="w-4 h-4"
+						/>
+						<label for="inc-variable" class="text-sm font-medium">{$t.entry.variable}</label>
+						<span class="text-xs text-gray-500">{$t.entry.variableHint}</span>
+					</div>
+					{#if formIsVariable}
+						<div class="grid grid-cols-2 gap-2">
+							<div>
+								<label for="inc-min" class="block text-xs font-medium mb-1">{$t.field.min}</label>
+								<input
+									id="inc-min"
+									type="number"
+									min="0"
+									step="0.01"
+									bind:value={formMin}
+									class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+									placeholder="{$t.field.min}"
+								/>
+							</div>
+							<div>
+								<label for="inc-max" class="block text-xs font-medium mb-1">{$t.field.max}</label>
+								<input
+									id="inc-max"
+									type="number"
+									min="0"
+									step="0.01"
+									bind:value={formMax}
+									class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+									placeholder="{$t.field.max}"
+								/>
+							</div>
+						</div>
+						<p class="text-xs text-gray-500">{$t.field.rangeHint}</p>
+					{/if}
+				{/if}
 				{#if formIsOneTime}
 					<div>
 						<label for="inc-date" class="block text-sm font-medium mb-1">{$t.field.date}</label>

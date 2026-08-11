@@ -9,6 +9,8 @@
 		getMonthKey,
 		generateMonthKeys,
 		getMonthlyAmount,
+		getItemAmountRange,
+		isVariableItem,
 		isItemActiveInMonth
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
@@ -43,6 +45,9 @@
 	let itemFormFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
 	let itemFormIsOneTime = $state(false);
 	let itemFormDate = $state('');
+	let itemFormIsVariable = $state(false);
+	let itemFormMin = $state('');
+	let itemFormMax = $state('');
 	let itemFormNotes = $state('');
 	let itemFormErrors = $state<ValidationErrors>({});
 
@@ -133,6 +138,9 @@
 		itemFormFrequency = 'monthly';
 		itemFormIsOneTime = false;
 		itemFormDate = new Date().toISOString().split('T')[0];
+		itemFormIsVariable = false;
+		itemFormMin = '';
+		itemFormMax = '';
 		itemFormNotes = '';
 		itemFormFutureChanges = [];
 		itemFormErrors = {};
@@ -150,6 +158,9 @@
 		itemFormDate = item.date
 			? new Date(item.date).toISOString().split('T')[0]
 			: new Date(item.startDate).toISOString().split('T')[0];
+		itemFormIsVariable = item.isVariable ?? false;
+		itemFormMin = item.minAmountInCents !== undefined ? String(item.minAmountInCents / 100) : '';
+		itemFormMax = item.maxAmountInCents !== undefined ? String(item.maxAmountInCents / 100) : '';
 		itemFormNotes = item.notes ?? '';
 		itemFormFutureChanges = (item.futureChanges ?? []).map((c) => ({
 			id: c.id,
@@ -207,6 +218,9 @@
 				frequency: itemFormFrequency,
 				isOneTime: itemFormIsOneTime,
 				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
+				isVariable: itemFormIsVariable,
+				minAmountInCents: itemFormIsVariable && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
+				maxAmountInCents: itemFormIsVariable && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -221,6 +235,9 @@
 				isActive: true,
 				isOneTime: itemFormIsOneTime,
 				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
+				isVariable: itemFormIsVariable,
+				minAmountInCents: itemFormIsVariable && itemFormMin !== '' ? Math.round(parseFloat(itemFormMin) * 100) : undefined,
+				maxAmountInCents: itemFormIsVariable && itemFormMax !== '' ? Math.round(parseFloat(itemFormMax) * 100) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -326,6 +343,16 @@
 
 	function fmt(amount: number): string {
 		return formatDisplay(amount, $budget?.currency ?? 'DKK', $displayCurrency, $exchangeRates);
+	}
+
+	function formatItemAmount(item: RecurringItem): string {
+		const freq = item.isOneTime ? '' : getFrequencyShort(item.frequency);
+		if (isVariableItem(item)) {
+			const { min, max } = getItemAmountRange(item);
+			const text = min === max ? `~${fmt(min)}` : `${fmt(min)}\u2013${fmt(max)}`;
+			return text + freq;
+		}
+		return fmt(item.amountInCents) + freq;
 	}
 
 	function changeDisplayCurrency(e: Event) {
@@ -456,7 +483,7 @@
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-income)">
-														{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyShort(item.frequency)}
+														{formatItemAmount(item)}
 													</span>
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
@@ -503,7 +530,7 @@
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-expense)">
-														-{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyShort(item.frequency)}
+														-{formatItemAmount(item)}
 													</span>
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
@@ -682,7 +709,7 @@
 				{/if}
 			</div>
 			<div>
-				<label for="bi-amount" class="block text-sm font-medium mb-1">{$t.field.amount}</label>
+				<label for="bi-amount" class="block text-sm font-medium mb-1">{itemFormIsVariable ? $t.field.estimate : $t.field.amount}</label>
 				<input id="bi-amount" type="number" bind:value={itemFormAmount} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]" min="0" step="0.01" required />
 				{#if itemFormErrors.amount}
 					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.amount}</p>
@@ -698,6 +725,47 @@
 				<label for="bi-onetime" class="text-sm font-medium">{$t.entry.oneTime}</label>
 				<span class="text-xs text-gray-500">{$t.entry.oneTimeHint}</span>
 			</div>
+			{#if !itemFormIsOneTime}
+				<div class="flex items-center gap-2">
+					<input
+						id="bi-variable"
+						type="checkbox"
+						bind:checked={itemFormIsVariable}
+						class="w-4 h-4"
+					/>
+					<label for="bi-variable" class="text-sm font-medium">{$t.entry.variable}</label>
+					<span class="text-xs text-gray-500">{$t.entry.variableHint}</span>
+				</div>
+				{#if itemFormIsVariable}
+					<div class="grid grid-cols-2 gap-2">
+						<div>
+							<label for="bi-min" class="block text-xs font-medium mb-1">{$t.field.min}</label>
+							<input
+								id="bi-min"
+								type="number"
+								min="0"
+								step="0.01"
+								bind:value={itemFormMin}
+								class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+								placeholder="{$t.field.min}"
+							/>
+						</div>
+						<div>
+							<label for="bi-max" class="block text-xs font-medium mb-1">{$t.field.max}</label>
+							<input
+								id="bi-max"
+								type="number"
+								min="0"
+								step="0.01"
+								bind:value={itemFormMax}
+								class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+								placeholder="{$t.field.max}"
+							/>
+						</div>
+					</div>
+					<p class="text-xs text-gray-500">{$t.field.rangeHint}</p>
+				{/if}
+			{/if}
 			{#if itemFormIsOneTime}
 				<div>
 					<label for="bi-date" class="block text-sm font-medium mb-1">{$t.field.date}</label>
