@@ -44,6 +44,7 @@ export const en = {
     type: 'Type',
     currency: 'Currency',
     notes: 'Notes',
+    date: 'Date',
     notesPlaceholder: 'e.g. Due on the 1st of each month',
     newCategoryPlaceholder: 'e.g. Insurance, Rent'
   },
@@ -80,7 +81,7 @@ export const en = {
     exportSuccess: 'Budget exported!',
     importSuccess: 'Budget imported!',
     importError: 'Invalid file',
-    csvHeader: 'Name;Amount;Currency;Type;Category;Frequency;Start date;Active',
+    csvHeader: 'Name;Amount;Currency;Type;Category;Frequency;Start date;Active;One-time;Date',
     csvYes: 'Yes',
     csvNo: 'No'
   },
@@ -108,6 +109,8 @@ export const en = {
     editIncome: 'Edit income',
     noItems: 'No items yet',
     duplicateItem: 'Duplicate',
+    oneTime: 'One-time',
+    oneTimeHint: 'A single purchase, not a recurring item',
     deleteConfirmExpense: 'Are you sure you want to delete this expense?',
     deleteConfirmIncome: 'Are you sure you want to delete this income?',
     createFirstExpense: 'Add your first expense to get started.',

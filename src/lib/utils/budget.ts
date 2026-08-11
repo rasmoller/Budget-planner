@@ -2,6 +2,7 @@ import { isUncategorized } from '$lib/types';
 import type { RecurringItem, MonthSummary, CategoryGroup } from '$lib/types';
 
 export function getMonthlyAmount(item: RecurringItem): number {
+	if (item.isOneTime) return item.amountInCents;
 	switch (item.frequency) {
 		case 'daily':
 			return item.amountInCents * 30;
@@ -36,6 +37,10 @@ export function generateMonthKeys(year: number): string[] {
 export function isItemActiveInMonth(item: RecurringItem, monthKey: string): boolean {
 	if (!item.isActive) return false;
 	const [year, month] = monthKey.split('-').map(Number);
+	if (item.isOneTime && item.date) {
+		const itemDate = new Date(item.date);
+		return itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
+	}
 	const itemStart = new Date(item.startDate);
 	const itemYear = itemStart.getFullYear();
 	const itemMonth = itemStart.getMonth() + 1;

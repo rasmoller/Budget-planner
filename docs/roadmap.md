@@ -53,8 +53,8 @@ From `TODO.md` — **Must** priority:
 |---------|----------|-------------|
 | **Search across income/expense** | Must | Search items across all categories |
 | **Category checkboxes in charts** | ✅ Done | Toggle categories on/off in chart for better comparison |
-| **One-time purchases** | Must | Single non-recurring expenses (e.g., a one-off purchase) |
-| **Future-dated changes** | Must | Schedule changes in advance (e.g., "in 3 months I switch from SU to dagpenge") |
+| **One-time purchases** | ✅ Done | Single non-recurring expenses (e.g., a one-off purchase) |
+| **Future-dated changes** | ✅ Done | Schedule changes in advance (e.g., "in 3 months I switch from SU to dagpenge") |
 
 ---
 
@@ -86,7 +86,5 @@ From `charts-rework-plan.md`:
 | **Charts page** | Line chart not yet implemented; two-column layout pending |
 | **Chart.js** | New dependency (~20-30 KB tree-shaken); center-text plugin and nested-dataset alignment are custom code that needs test coverage |
 | **DB migrations** | Schema upgrades v1→v2→v3 exist but are untested |
-| **One-time purchases** | Schema has no `isOneTime` or `date` field for one-off items |
-| **Future-dated changes** | No mechanism for scheduling future start-date/amount changes |
 | **Variable amounts** | No `min`/`max` or `estimated` field on items |
 | **Search** | No search/filter UI for items |
