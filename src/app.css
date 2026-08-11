@@ -83,19 +83,18 @@ dialog {
 }
 
 .segmented-btn-active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #ffffff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
 }
 
 .segmented-btn-active:hover {
-  background-color: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
-  color: #ffffff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 .dark .segmented-btn-active {
+  color: #ffffff;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.45);
 }
 
