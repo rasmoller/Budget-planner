@@ -55,6 +55,11 @@ describe('getMonthlyAmount', () => {
 		const item = makeItem({ amountInCents: 0, frequency: 'monthly' });
 		expect(getMonthlyAmount(item)).toBe(0);
 	});
+
+	it('returns full amount for one-time items regardless of frequency', () => {
+		const item = makeItem({ isOneTime: true, amountInCents: 250000, frequency: 'yearly' });
+		expect(getMonthlyAmount(item)).toBe(250000);
+	});
 });
 
 describe('getMonthKey', () => {
@@ -125,6 +130,22 @@ describe('isItemActiveInMonth', () => {
 	it('handles year boundary crossing', () => {
 		const item = makeItem({ startDate: new Date('2025-12-01'), isActive: true });
 		expect(isItemActiveInMonth(item, '2026-01')).toBe(true);
+	});
+
+	it('returns true for a one-time item in the month of its date', () => {
+		const item = makeItem({ isOneTime: true, date: new Date('2026-06-15'), isActive: true });
+		expect(isItemActiveInMonth(item, '2026-06')).toBe(true);
+	});
+
+	it('returns false for a one-time item outside the month of its date', () => {
+		const item = makeItem({ isOneTime: true, date: new Date('2026-06-15'), isActive: true });
+		expect(isItemActiveInMonth(item, '2026-05')).toBe(false);
+		expect(isItemActiveInMonth(item, '2026-07')).toBe(false);
+	});
+
+	it('returns false for an inactive one-time item', () => {
+		const item = makeItem({ isOneTime: true, date: new Date('2026-06-15'), isActive: false });
+		expect(isItemActiveInMonth(item, '2026-06')).toBe(false);
 	});
 });
 
@@ -330,5 +351,20 @@ describe('calculateMonthSummary', () => {
 		expect(august.totalExpenses).toBe(100000);
 		const september = calculateMonthSummary([item], categories, '2026-09');
 		expect(september.totalExpenses).toBe(0);
+	});
+
+	it('counts a one-time item at full amount only in its month', () => {
+		const item = makeItem({
+			categoryId: 'cat-1',
+			type: 'expense',
+			amountInCents: 500000,
+			isOneTime: true,
+			date: new Date('2026-06-20')
+		});
+		const inMonth = calculateMonthSummary([item], categories, '2026-06');
+		expect(inMonth.totalExpenses).toBe(500000);
+
+		const otherMonth = calculateMonthSummary([item], categories, '2026-07');
+		expect(otherMonth.totalExpenses).toBe(0);
 	});
 });

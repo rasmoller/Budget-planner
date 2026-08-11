@@ -41,6 +41,8 @@
 	let itemFormName = $state('');
 	let itemFormAmount = $state(0);
 	let itemFormFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+	let itemFormIsOneTime = $state(false);
+	let itemFormDate = $state('');
 	let itemFormNotes = $state('');
 	let itemFormErrors = $state<ValidationErrors>({});
 
@@ -129,6 +131,8 @@
 		itemFormName = '';
 		itemFormAmount = 0;
 		itemFormFrequency = 'monthly';
+		itemFormIsOneTime = false;
+		itemFormDate = new Date().toISOString().split('T')[0];
 		itemFormNotes = '';
 		itemFormFutureChanges = [];
 		itemFormErrors = {};
@@ -142,6 +146,10 @@
 		itemFormName = item.name;
 		itemFormAmount = item.amountInCents / 100;
 		itemFormFrequency = item.frequency;
+		itemFormIsOneTime = item.isOneTime ?? false;
+		itemFormDate = item.date
+			? new Date(item.date).toISOString().split('T')[0]
+			: new Date(item.startDate).toISOString().split('T')[0];
 		itemFormNotes = item.notes ?? '';
 		itemFormFutureChanges = (item.futureChanges ?? []).map((c) => ({
 			id: c.id,
@@ -197,6 +205,8 @@
 				amountInCents: amountInOre,
 				type: itemFormType,
 				frequency: itemFormFrequency,
+				isOneTime: itemFormIsOneTime,
+				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -209,6 +219,8 @@
 				frequency: itemFormFrequency,
 				startDate: new Date(),
 				isActive: true,
+				isOneTime: itemFormIsOneTime,
+				date: itemFormIsOneTime ? new Date(itemFormDate) : undefined,
 				futureChanges,
 				notes: itemFormNotes || undefined
 			});
@@ -444,7 +456,7 @@
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-income)">
-														{fmt(item.amountInCents)}{getFrequencyShort(item.frequency)}
+														{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyShort(item.frequency)}
 													</span>
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
@@ -491,7 +503,7 @@
 												<span class="text-sm">{item.name}</span>
 												<div class="flex items-center gap-2">
 													<span class="font-mono text-sm" style="color: var(--color-expense)">
-														-{fmt(item.amountInCents)}{getFrequencyShort(item.frequency)}
+														-{fmt(item.amountInCents)}{item.isOneTime ? '' : getFrequencyShort(item.frequency)}
 													</span>
 													<button
 														onclick={() => handleDuplicateItem(item.id)}
@@ -676,15 +688,38 @@
 					<p class="text-xs text-[var(--color-danger)] mt-1">{itemFormErrors.amount}</p>
 				{/if}
 			</div>
-			<div>
-				<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
-				<select id="bi-freq" bind:value={itemFormFrequency} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]">
-					<option value="daily">{$t.frequency.daily}</option>
-					<option value="weekly">{$t.frequency.weekly}</option>
-					<option value="monthly">{$t.frequency.monthly}</option>
-					<option value="yearly">{$t.frequency.yearly}</option>
-				</select>
+			<div class="flex items-center gap-2">
+				<input
+					id="bi-onetime"
+					type="checkbox"
+					bind:checked={itemFormIsOneTime}
+					class="w-4 h-4"
+				/>
+				<label for="bi-onetime" class="text-sm font-medium">{$t.entry.oneTime}</label>
+				<span class="text-xs text-gray-500">{$t.entry.oneTimeHint}</span>
 			</div>
+			{#if itemFormIsOneTime}
+				<div>
+					<label for="bi-date" class="block text-sm font-medium mb-1">{$t.field.date}</label>
+					<input
+						id="bi-date"
+						type="date"
+						bind:value={itemFormDate}
+						class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]"
+						required
+					/>
+				</div>
+			{:else}
+				<div>
+					<label for="bi-freq" class="block text-sm font-medium mb-1">{$t.field.frequency}</label>
+					<select id="bi-freq" bind:value={itemFormFrequency} class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)]">
+						<option value="daily">{$t.frequency.daily}</option>
+						<option value="weekly">{$t.frequency.weekly}</option>
+						<option value="monthly">{$t.frequency.monthly}</option>
+						<option value="yearly">{$t.frequency.yearly}</option>
+					</select>
+				</div>
+			{/if}
 			<div class="pt-2 border-t border-[var(--color-border)]">
 				<div class="flex items-start justify-between mb-2 gap-2">
 					<div>

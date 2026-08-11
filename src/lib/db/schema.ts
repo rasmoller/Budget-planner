@@ -36,6 +36,11 @@ export class BudgetDatabase extends Dexie {
 				});
 			}
 		});
+		this.version(4).stores({
+			budgets: 'id, createdAt, isArchived',
+			categories: 'id, budgetId, order',
+			recurringItems: 'id, budgetId, categoryId, type, frequency, isActive, isOneTime'
+		});
 	}
 }
 
