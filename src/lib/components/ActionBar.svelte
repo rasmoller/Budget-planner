@@ -22,15 +22,15 @@
 	} = $props();
 </script>
 
-<div class="flex justify-between gap-2 items-center -mt-4 mb-2">
+<div class="flex flex-wrap justify-between gap-2 items-center -mt-4 mb-2">
 	{#if $viewMode === 'year'}
-		<div class="flex items-center gap-3">
+		<div class="flex items-center gap-3 flex-wrap">
 			<button onclick={prevYear} class="btn-sm btn-outline">←</button>
 			<span class="text-lg font-semibold">{currentYear}</span>
 			<button onclick={nextYear} class="btn-sm btn-outline">→</button>
 		</div>
 	{:else}
-		<div class="flex items-center gap-3">
+		<div class="flex items-center gap-3 flex-wrap">
 			<button onclick={prevMonth} class="btn-sm btn-outline">←</button>
 			<span class="text-lg font-semibold">
 				{$t.months[parseInt(selectedMonth.split('-')[1]) - 1]} {selectedMonth.split('-')[0]}
@@ -38,7 +38,7 @@
 			<button onclick={nextMonth} class="btn-sm btn-outline">→</button>
 		</div>
 	{/if}
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-2 flex-wrap">
 		<select
 			value={$displayCurrency ?? 'none'}
 			onchange={(e) => {

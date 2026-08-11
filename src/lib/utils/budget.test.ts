@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
 	getMonthlyAmount,
+	getMonthlyAmountRange,
 	getMonthKey,
 	getMonthNumber,
 	getYearFromKey,
 	generateMonthKeys,
 	isItemActiveInMonth,
+	isVariableItem,
+	getItemAmountRange,
 	getEffectiveItem,
 	isIncomeItem,
 	isExpenseItem,
@@ -59,6 +62,78 @@ describe('getMonthlyAmount', () => {
 	it('returns full amount for one-time items regardless of frequency', () => {
 		const item = makeItem({ isOneTime: true, amountInCents: 250000, frequency: 'yearly' });
 		expect(getMonthlyAmount(item)).toBe(250000);
+	});
+
+	it('uses the estimate (amountInCents) as the monthly value for variable items', () => {
+		const item = makeItem({ isVariable: true, amountInCents: 80000, frequency: 'monthly' });
+		expect(getMonthlyAmount(item)).toBe(80000);
+	});
+});
+
+describe('isVariableItem', () => {
+	it('returns true when isVariable is set', () => {
+		expect(isVariableItem(makeItem({ isVariable: true }))).toBe(true);
+	});
+
+	it('returns false when isVariable is not set', () => {
+		expect(isVariableItem(makeItem({}))).toBe(false);
+	});
+
+	it('returns false when isVariable is explicitly false', () => {
+		expect(isVariableItem(makeItem({ isVariable: false }))).toBe(false);
+	});
+});
+
+describe('getItemAmountRange', () => {
+	it('falls back to the amount when min/max are missing', () => {
+		const item = makeItem({ isVariable: true, amountInCents: 80000 });
+		expect(getItemAmountRange(item)).toEqual({ min: 80000, max: 80000 });
+	});
+
+	it('uses min and max when both are provided', () => {
+		const item = makeItem({ amountInCents: 80000, minAmountInCents: 50000, maxAmountInCents: 100000 });
+		expect(getItemAmountRange(item)).toEqual({ min: 50000, max: 100000 });
+	});
+
+	it('uses the amount as the missing bound', () => {
+		const item = makeItem({ amountInCents: 80000, minAmountInCents: 50000 });
+		expect(getItemAmountRange(item)).toEqual({ min: 50000, max: 80000 });
+	});
+
+	it('normalizes an inverted range', () => {
+		const item = makeItem({ amountInCents: 80000, minAmountInCents: 100000, maxAmountInCents: 50000 });
+		expect(getItemAmountRange(item)).toEqual({ min: 50000, max: 100000 });
+	});
+});
+
+describe('getMonthlyAmountRange', () => {
+	it('applies the frequency multiplier to the range for weekly items', () => {
+		const item = makeItem({
+			isVariable: true,
+			amountInCents: 100000,
+			minAmountInCents: 50000,
+			maxAmountInCents: 150000,
+			frequency: 'weekly'
+		});
+		const range = getMonthlyAmountRange(item);
+		expect(range.min).toBeCloseTo(216500, 0);
+		expect(range.max).toBeCloseTo(649500, 0);
+	});
+
+	it('returns the raw range for monthly items', () => {
+		const item = makeItem({ isVariable: true, amountInCents: 80000, minAmountInCents: 50000, maxAmountInCents: 100000 });
+		expect(getMonthlyAmountRange(item)).toEqual({ min: 50000, max: 100000 });
+	});
+
+	it('divides the range for yearly items', () => {
+		const item = makeItem({
+			isVariable: true,
+			amountInCents: 1200000,
+			minAmountInCents: 600000,
+			maxAmountInCents: 1800000,
+			frequency: 'yearly'
+		});
+		expect(getMonthlyAmountRange(item)).toEqual({ min: 50000, max: 150000 });
 	});
 });
 
@@ -366,5 +441,19 @@ describe('calculateMonthSummary', () => {
 
 		const otherMonth = calculateMonthSummary([item], categories, '2026-07');
 		expect(otherMonth.totalExpenses).toBe(0);
+	});
+
+	it('counts a variable item at its estimate amount', () => {
+		const item = makeItem({
+			categoryId: 'cat-1',
+			type: 'expense',
+			amountInCents: 80000,
+			isVariable: true,
+			minAmountInCents: 50000,
+			maxAmountInCents: 100000,
+			frequency: 'monthly'
+		});
+		const summary = calculateMonthSummary([item], categories, '2026-06');
+		expect(summary.totalExpenses).toBe(80000);
 	});
 });

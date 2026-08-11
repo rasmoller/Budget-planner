@@ -239,7 +239,10 @@
 				startDate,
 				item.isActive ? $t.budget.csvYes : $t.budget.csvNo,
 				item.isOneTime ? $t.budget.csvYes : $t.budget.csvNo,
-				itemDate
+				itemDate,
+				item.isVariable ? $t.budget.csvYes : $t.budget.csvNo,
+				item.minAmountInCents !== undefined ? formatAmount(item.minAmountInCents) : '',
+				item.maxAmountInCents !== undefined ? formatAmount(item.maxAmountInCents) : ''
 			].join(';');
 		});
 
@@ -299,6 +302,9 @@
 						isActive: item.isActive,
 						isOneTime: item.isOneTime ?? false,
 						date: item.date ? new Date(item.date) : undefined,
+						isVariable: item.isVariable ?? false,
+						minAmountInCents: item.minAmountInCents,
+						maxAmountInCents: item.maxAmountInCents,
 						futureChanges: Array.isArray(item.futureChanges)
 							? item.futureChanges.map((c: { id?: string; effectiveDate: string; amountInCents?: number; frequency?: string; isActive?: boolean; createdAt?: string }) => ({
 									id: c.id || crypto.randomUUID(),
@@ -326,15 +332,15 @@
 
 <div class="min-h-screen flex flex-col">
 	<header class="bg-[var(--color-header)]">
-		<div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+		<div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
 			<a href="/" class="text-xl font-semibold text-[var(--color-header-text)] hover:opacity-90 transition-opacity">
 				Budget Planner
 			</a>
-			<div class="flex items-center gap-3">
+			<div class="flex items-center gap-2 sm:gap-3 flex-wrap">
 				{#if $budget}
 					<a
 						href="/"
-						class="btn-header
+						class="btn-header hidden sm:inline-flex
 							{currentPath === '/' ? '!bg-white !text-[var(--color-header)]' : ''}"
 					>
 						{$t.nav.dashboard}
@@ -394,7 +400,7 @@
 		</div>
 	</header>
 
-	<main class="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+	<main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
 		{@render children()}
 	</main>
 

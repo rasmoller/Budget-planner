@@ -162,7 +162,7 @@
 		</div>
 
 		<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
-			<div class="grid grid-cols-4 gap-2 p-3 text-xs font-medium text-gray-500">
+			<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 text-xs font-medium text-gray-500">
 				<span class="flex items-center gap-2">
 					<input
 						type="checkbox"
@@ -178,16 +178,16 @@
 			</div>
 			{#each displayGroups as group (group.categoryId)}
 				{@const isEnabled = enabledCategoryIds.has(group.categoryId)}
-				<div class="grid grid-cols-4 gap-2 p-3 items-center {isEnabled ? '' : 'opacity-40'}">
-					<div class="flex items-center gap-2">
+				<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 items-center {isEnabled ? '' : 'opacity-40'}">
+					<div class="flex items-center gap-2 min-w-0">
 						<input
 							type="checkbox"
 							checked={isEnabled}
 							onchange={() => toggleCategory(group.categoryId)}
-							class="w-3.5 h-3.5"
+							class="w-3.5 h-3.5 shrink-0"
 						/>
-						<div class="w-3 h-3 rounded-full" style="background-color: {group.categoryColor}"></div>
-						<span class="text-sm font-medium">{group.categoryName}</span>
+						<div class="w-3 h-3 rounded-full shrink-0" style="background-color: {group.categoryColor}"></div>
+						<span class="text-sm font-medium truncate">{group.categoryName}</span>
 					</div>
 					<span class="text-right font-mono text-sm" style="color: var(--color-income)">
 						{group.incomeTotal > 0 ? fmt(group.incomeTotal) : '—'}
