@@ -94,7 +94,7 @@ dialog {
 }
 
 .dark .segmented-btn-active {
-  color: #ffffff;
+  background-color: #334155;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.45);
 }
 
