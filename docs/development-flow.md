@@ -32,17 +32,18 @@ This document describes how features move from idea to release in this project. 
 
 ## 5. Verification commands
 
-| Command | Purpose |
-|---|---|
-| `npm test` | Run the test suite (Vitest) |
-| `npm run check` | Type check + Svelte checks |
-| `npm run build` | Production build via Wrangler/Cloudflare |
-| `npm run preview` | Build and preview locally via Wrangler |
+| Command           | Purpose                                  |
+| ----------------- | ---------------------------------------- |
+| `npm test`        | Run the test suite (Vitest)              |
+| `npm run check`   | Type check + Svelte checks               |
+| `npm run build`   | Production build via Wrangler/Cloudflare |
+| `npm run preview` | Build and preview locally via Wrangler   |
 
 ## Definition of done
 
 - [ ] Feature picked from the roadmap (or approved as a new feature)
 - [ ] Implemented on a dedicated feature branch
+- [ ] No raw text in HTML, there should be i18n inserts
 - [ ] Tests added and passing
 - [ ] `npm run check` passes
 - [ ] Merged into `Staging`

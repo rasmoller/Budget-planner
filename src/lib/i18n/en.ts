@@ -116,6 +116,16 @@ export const en = {
     createFirstExpense: 'Add your first expense to get started.',
     createFirstIncome: 'Add your first income to get started.'
   },
+  futureChanges: {
+    title: 'Future changes',
+    hint: 'Schedule changes in advance, e.g. a salary change or stopping an item',
+    effectiveDate: 'Effective date',
+    newAmount: 'New amount',
+    newStatus: 'New status',
+    keep: 'Keep current',
+    add: 'Add future change',
+    remove: 'Remove'
+  },
   chart: {
     totalPerMonth: 'total / month',
     innerRing: 'Inner: Category',

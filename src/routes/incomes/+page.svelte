@@ -5,7 +5,7 @@
 	import { formatCurrency } from '$lib/utils/currency';
 	import { getMonthlyAmount } from '$lib/utils/budget';
 	import { UNCATEGORIZED, isUncategorized } from '$lib/types';
-	import type { RecurringItem, Currency } from '$lib/types';
+	import type { RecurringItem, Currency, ScheduledChange } from '$lib/types';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 	import { t } from '$lib/i18n';
@@ -24,6 +24,20 @@
 	let showMoreOptions = $state(false);
 	let formErrors = $state<ValidationErrors>({});
 
+	type ChangeForm = { id: string; effectiveDate: string; amount: string; status: 'keep' | 'active' | 'inactive' };
+	let formFutureChanges = $state<ChangeForm[]>([]);
+
+	function addFutureChange() {
+		formFutureChanges = [
+			...formFutureChanges,
+			{ id: crypto.randomUUID(), effectiveDate: new Date().toISOString().split('T')[0], amount: '', status: 'keep' }
+		];
+	}
+
+	function removeFutureChange(id: string) {
+		formFutureChanges = formFutureChanges.filter((c) => c.id !== id);
+	}
+
 	const incomeItems = $derived($recurringItems.filter((i) => i.type === 'income'));
 
 	function openAddModal() {
@@ -37,6 +51,7 @@
 		formStartDate = new Date().toISOString().split('T')[0];
 		formIsActive = true;
 		formNotes = '';
+		formFutureChanges = [];
 		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
@@ -55,6 +70,12 @@
 		formStartDate = new Date(item.startDate).toISOString().split('T')[0];
 		formIsActive = item.isActive;
 		formNotes = item.notes ?? '';
+		formFutureChanges = (item.futureChanges ?? []).map((c) => ({
+			id: c.id,
+			effectiveDate: new Date(c.effectiveDate).toISOString().split('T')[0],
+			amount: c.amountInCents !== undefined ? String(c.amountInCents / 100) : '',
+			status: c.isActive === undefined ? 'keep' : c.isActive ? 'active' : 'inactive'
+		}));
 		formErrors = {};
 		showMoreOptions = false;
 		showModal = true;
@@ -68,6 +89,16 @@
 		if (amountErr) formErrors.amount = amountErr;
 		if (nameErr || amountErr) return;
 
+		const futureChanges: ScheduledChange[] = formFutureChanges
+			.filter((c) => c.effectiveDate)
+			.map((c) => ({
+				id: c.id,
+				effectiveDate: new Date(c.effectiveDate),
+				...(c.amount !== '' ? { amountInCents: Math.round(parseFloat(c.amount) * 100) } : {}),
+				...(c.status !== 'keep' ? { isActive: c.status === 'active' } : {}),
+				createdAt: new Date()
+			}));
+
 		const data = {
 			name: formName,
 			amountInCents: Math.round(formAmount * 100),
@@ -78,6 +109,7 @@
 			isActive: formIsActive,
 			isOneTime: formIsOneTime,
 			date: formIsOneTime ? new Date(formDate) : undefined,
+			futureChanges,
 			notes: formNotes || undefined
 		};
 
@@ -319,6 +351,73 @@
 						</select>
 					</div>
 				{/if}
+
+				<div class="pt-2 border-t border-[var(--color-border)]">
+					<div class="flex items-start justify-between mb-2 gap-2">
+						<div>
+							<p class="text-sm font-medium">{$t.futureChanges.title}</p>
+							<p class="text-xs text-gray-500">{$t.futureChanges.hint}</p>
+						</div>
+						<button
+							type="button"
+							onclick={addFutureChange}
+							class="btn-pill shrink-0 text-xs"
+						>
+							+ {$t.futureChanges.add}
+						</button>
+					</div>
+					{#if formFutureChanges.length > 0}
+						<div class="space-y-2">
+							{#each formFutureChanges as change}
+								<div class="p-3 border border-[var(--color-border)] rounded-md space-y-2">
+									<div class="grid grid-cols-2 gap-2">
+										<div>
+											<label for={change.id + '-date'} class="block text-xs font-medium mb-1">{$t.futureChanges.effectiveDate}</label>
+											<input
+												id={change.id + '-date'}
+												type="date"
+												bind:value={change.effectiveDate}
+												class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+											/>
+										</div>
+										<div>
+											<label for={change.id + '-amount'} class="block text-xs font-medium mb-1">{$t.futureChanges.newAmount}</label>
+											<input
+												id={change.id + '-amount'}
+												type="number"
+												min="0"
+												step="0.01"
+												bind:value={change.amount}
+												class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+												placeholder="{$t.field.amount}"
+											/>
+										</div>
+									</div>
+									<div class="flex items-center justify-between">
+										<select
+											bind:value={change.status}
+											class="px-2 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-sm"
+										>
+											<option value="keep">{$t.futureChanges.keep}</option>
+											<option value="active">{$t.common.active}</option>
+											<option value="inactive">{$t.common.inactive}</option>
+										</select>
+										<button
+											type="button"
+											onclick={() => removeFutureChange(change.id)}
+											class="btn-icon btn-icon-danger"
+											aria-label="{$t.futureChanges.remove}"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+												<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+											</svg>
+										</button>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
 
 				<button
 					type="button"

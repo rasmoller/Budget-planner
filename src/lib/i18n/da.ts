@@ -121,6 +121,16 @@ export const da = {
     createFirstExpense: "Tilføj din første udgift for at komme i gang.",
     createFirstIncome: "Tilføj din første indtægt for at komme i gang.",
   },
+  futureChanges: {
+    title: "Fremtidige ændringer",
+    hint: "Planlæg ændringer på forhånd, f.eks. en lønændring eller stop af et element",
+    effectiveDate: "Ikrafttrædelsesdato",
+    newAmount: "Nyt beløb",
+    newStatus: "Ny status",
+    keep: "Behold nuværende",
+    add: "Tilføj fremtidig ændring",
+    remove: "Fjern",
+  },
   chart: {
     totalPerMonth: "total / md",
     innerRing: "Indre: Kategori",
