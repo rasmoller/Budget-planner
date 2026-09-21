@@ -1,10 +1,10 @@
 # Development Flow
 
-This document describes how features move from idea to release in this project. It applies to all work done in this repository. Read `ROADMAP.md` before starting a new session.
+This document describes how features move from idea to release in this project. It applies to all work done in this repository. Read `docs/roadmap.md` before starting a new session.
 
 ## 1. Picking work — the roadmap
 
-- All upcoming work lives in [`ROADMAP.md`](../ROADMAP.md).
+- All upcoming work lives in [`docs/roadmap.md`](roadmap.md).
 - Features are picked from the roadmap. **Focus on newer tasks; ongoing tasks are the highest priority.**
 - Before picking a new feature, check for unfinished work, known bugs, or missing tests in the area you are working on and fix those first.
 

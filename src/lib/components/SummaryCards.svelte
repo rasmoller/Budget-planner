@@ -16,7 +16,7 @@ let balance = $derived(income - expense);
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 	<a href="/incomes"
-		class="block p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:brightness-110 transition-all"
+		class="block p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:brightness-110 transition-[filter]"
 	>
 		<p class="text-sm text-gray-500 mb-1 flex items-center gap-1">
 			{$t.summary.totalIncome}
@@ -29,7 +29,7 @@ let balance = $derived(income - expense);
 		</p>
 	</a>
 	<a href="/expenses"
-		class="block p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:brightness-110 transition-all"
+		class="block p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:brightness-110 transition-[filter]"
 	>
 		<p class="text-sm text-gray-500 mb-1 flex items-center gap-1">
 			{$t.summary.totalExpenses}

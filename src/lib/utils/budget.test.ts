@@ -3,15 +3,11 @@ import {
 	getMonthlyAmount,
 	getMonthlyAmountRange,
 	getMonthKey,
-	getMonthNumber,
-	getYearFromKey,
 	generateMonthKeys,
 	isItemActiveInMonth,
 	isVariableItem,
 	getItemAmountRange,
 	getEffectiveItem,
-	isIncomeItem,
-	isExpenseItem,
 	calculateMonthSummary
 } from './budget';
 import type { RecurringItem } from '$lib/types';
@@ -151,21 +147,6 @@ describe('getMonthKey', () => {
 	});
 });
 
-describe('getMonthNumber', () => {
-	it('returns 0-indexed month from key', () => {
-		expect(getMonthNumber('2026-01')).toBe(0);
-		expect(getMonthNumber('2026-07')).toBe(6);
-		expect(getMonthNumber('2026-12')).toBe(11);
-	});
-});
-
-describe('getYearFromKey', () => {
-	it('extracts year from key', () => {
-		expect(getYearFromKey('2026-07')).toBe(2026);
-		expect(getYearFromKey('2025-01')).toBe(2025);
-	});
-});
-
 describe('generateMonthKeys', () => {
 	it('generates 12 month keys for a given year', () => {
 		const keys = generateMonthKeys(2026);
@@ -271,18 +252,6 @@ describe('getEffectiveItem', () => {
 		expect(getEffectiveItem(item, '2026-02').amountInCents).toBe(100000);
 		expect(getEffectiveItem(item, '2026-04').amountInCents).toBe(200000);
 		expect(getEffectiveItem(item, '2026-08').amountInCents).toBe(300000);
-	});
-});
-
-describe('isIncomeItem / isExpenseItem', () => {
-	it('isIncomeItem returns true for income type', () => {
-		expect(isIncomeItem(makeItem({ type: 'income' }))).toBe(true);
-		expect(isIncomeItem(makeItem({ type: 'expense' }))).toBe(false);
-	});
-
-	it('isExpenseItem returns true for expense type', () => {
-		expect(isExpenseItem(makeItem({ type: 'expense' }))).toBe(true);
-		expect(isExpenseItem(makeItem({ type: 'income' }))).toBe(false);
 	});
 });
 

@@ -11,7 +11,23 @@ Small gaps to close before starting new features:
 | Item | Status | Notes |
 |------|--------|-------|
 | Overview year-view empty state | 📋 | `overview/+page.svelte` renders nothing when there are no categories/items; charts page already handles this via `hasData` + `noItems` |
-| `validation.test.ts` plan (15 tests) | 📋 | Planned in test-plan but never written |
+| Planned tests (dialogs, types, DB schema) | 📋 | 7 tests planned in `docs/test-plan.md` |
+
+---
+
+## Cleanup Backlog (Deferred Refactors)
+
+Refactors identified during repo cleanup but deferred — do these before starting new features:
+
+| Item | Notes |
+|------|-------|
+| Merge `incomes` + `expenses` pages | Two 551-line pages that differ only by `type`; extract a shared `ItemListPage.svelte` (type prop) and make routes thin wrappers |
+| Extract `ItemFormDialog.svelte` | Item add/edit form duplicated in `+page.svelte` and both item pages (type toggle, standard/one-time/variable selector, future-changes editor) |
+| Extract `CategoryColorPicker.svelte` | Swatch grid + custom color input duplicated in `+page.svelte` and `categories/+page.svelte`; `defaultColors` array also duplicated |
+| Extract `CurrencySelect.svelte` | Currency `<select>` duplicated in `ActionBar.svelte` and `+page.svelte` |
+| Move month-nav helpers to `lib/utils/budget.ts` | `prevMonth`/`nextMonth`/`prevYear`/`nextYear` duplicated in charts + overview |
+| Split `+layout.svelte` (634 lines) | Extract budget dialogs + JSON/CSV export/import logic into components/utils |
+| Move displayCurrency localStorage init to layout | Repeated init block in 5 pages |
 
 ---
 
@@ -30,7 +46,7 @@ Small gaps to close before starting new features:
 | Export/Import (JSON/CSV) | ✅ | — |
 | Dark mode | ✅ | `prefers-color-scheme` |
 | Bilingual (DA/EN) | ✅ | Svelte store-based i18n |
-| Local IndexedDB storage | ✅ | Dexie with schema upgrades v1→v2→v3 |
+| Local IndexedDB storage | ✅ | Dexie with schema upgrades v1→v5 |
 
 ---
 
@@ -45,9 +61,7 @@ See `docs/charts-rework-plan.md` for full details.
 
 ---
 
-## Phase 3 — High-Priority Features (📋 Planned)
-
-From `TODO.md` — **Must** priority:
+## Phase 3 — High-Priority Features (✅ Complete)
 
 | Feature | Priority | Description |
 |---------|----------|-------------|
@@ -58,7 +72,7 @@ From `TODO.md` — **Must** priority:
 
 ---
 
-## Phase 4 — Should-Have Features
+## Phase 4 — Should-Have Features (✅ Complete)
 
 | Feature | Priority | Description |
 |---------|----------|-------------|
@@ -81,7 +95,7 @@ From `charts-rework-plan.md`:
 
 | Area | Issue |
 |------|-------|
-| **Test coverage** | ⚠️ 22 planned tests (`validation`, `dialogs`, types, DB schema) — see `docs/test-plan.md` |
+| **Test coverage** | ⚠️ 7 planned tests (`dialogs`, types, DB schema) — see `docs/test-plan.md` |
 | **Exchange rates** | No error handling if the Frankfurter API is unreachable; `fetchExchangeRates` is called but failed requests are not handled |
 | **Charts page** | Line chart not yet implemented; two-column layout pending |
 | **Chart.js** | New dependency (~20-30 KB tree-shaken); center-text plugin and nested-dataset alignment are custom code that needs test coverage |

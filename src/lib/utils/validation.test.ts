@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateName, validateAmount, validateRequired, hasErrors, runValidators } from './validation';
+import { validateName, validateAmount } from './validation';
 import { en } from '../i18n/en';
 
 const t = en;
@@ -41,42 +41,5 @@ describe('validateAmount', () => {
 
 	it('accepts whole numbers', () => {
 		expect(validateAmount(100, t)).toBe('');
-	});
-});
-
-describe('validateRequired', () => {
-	it('rejects empty string', () => {
-		expect(validateRequired('', 'Name', t)).toBe(`Name ${t.validation.required}`);
-	});
-
-	it('accepts non-empty string', () => {
-		expect(validateRequired('x', 'Name', t)).toBe('');
-	});
-});
-
-describe('runValidators', () => {
-	it('collects errors for failing rules', () => {
-		const errors = runValidators({
-			name: () => 'err'
-		});
-		expect(errors).toEqual({ name: 'err' });
-	});
-
-	it('skips fields that pass', () => {
-		const errors = runValidators({
-			name: () => '',
-			amount: () => 'bad'
-		});
-		expect(errors).toEqual({ amount: 'bad' });
-	});
-});
-
-describe('hasErrors', () => {
-	it('returns true when errors exist', () => {
-		expect(hasErrors({ name: 'err' })).toBe(true);
-	});
-
-	it('returns false when no errors', () => {
-		expect(hasErrors({})).toBe(false);
 	});
 });

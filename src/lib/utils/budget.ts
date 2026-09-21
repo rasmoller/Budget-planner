@@ -44,14 +44,6 @@ export function getMonthKey(date: Date): string {
 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function getMonthNumber(monthKey: string): number {
-	return parseInt(monthKey.split('-')[1]) - 1;
-}
-
-export function getYearFromKey(monthKey: string): number {
-	return parseInt(monthKey.split('-')[0]);
-}
-
 export function generateMonthKeys(year: number): string[] {
 	return Array.from({ length: 12 }, (_, i) => {
 		const month = String(i + 1).padStart(2, '0');
@@ -93,14 +85,6 @@ export function getEffectiveItem(item: RecurringItem, monthKey: string): Recurri
 		};
 	}
 	return effective;
-}
-
-export function isIncomeItem(item: RecurringItem): boolean {
-	return item.type === 'income';
-}
-
-export function isExpenseItem(item: RecurringItem): boolean {
-	return item.type === 'expense';
 }
 
 export function calculateMonthSummary(

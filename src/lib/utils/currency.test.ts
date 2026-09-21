@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, parseCurrency, formatDKK } from './currency';
+import { formatCurrency, parseCurrency } from './currency';
 
 describe('formatCurrency', () => {
 	it('formats DKK with kr suffix and 2 decimals', () => {
@@ -93,13 +93,5 @@ describe('parseCurrency', () => {
 
 	it('parses whole number with two decimal places', () => {
 		expect(parseCurrency('1500,99')).toBe(150099);
-	});
-});
-
-describe('formatDKK', () => {
-	it('formats amount as DKK with 2 decimals', () => {
-		const result = formatDKK(50000);
-		expect(result).toContain('500');
-		expect(result).toContain('kr');
 	});
 });

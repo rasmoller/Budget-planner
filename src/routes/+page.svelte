@@ -2,20 +2,16 @@
 	import { budget } from '$lib/stores/budget';
 	import { categories } from '$lib/stores/categories';
 	import { recurringItems } from '$lib/stores/recurringItems';
-	import { formatCurrency } from '$lib/utils/currency';
 	import { displayCurrency, exchangeRates, formatDisplay } from '$lib/stores/displayCurrency';
 	import {
 		calculateMonthSummary,
 		getMonthKey,
 		generateMonthKeys,
-		getMonthlyAmount,
 		getItemAmountRange,
-		isVariableItem,
-		isItemActiveInMonth
+		isVariableItem
 	} from '$lib/utils/budget';
 	import { t } from '$lib/i18n';
 	import SummaryCards from '$lib/components/SummaryCards.svelte';
-	import { UNCATEGORIZED } from '$lib/types';
 	import type { RecurringItem, CategoryGroup, Currency, ScheduledChange } from '$lib/types';
 	import { openAllBudgets } from '$lib/stores/dialogs';
 	import { validateName, validateAmount, type ValidationErrors } from '$lib/utils/validation';

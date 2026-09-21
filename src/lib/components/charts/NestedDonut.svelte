@@ -9,7 +9,7 @@
 
 	let { groups, currency = 'DKK' as Currency }: { groups: CategoryGroup[]; currency?: Currency } = $props();
 
-	type OuterEntry = { value: number; color: string; label: string; type: 'incomes' | 'expenses' };
+	type OuterEntry = { value: number; color: string; label: string; type: 'income' | 'expense' };
 
 		const centerTextPlugin = {
 		id: 'centerText',
@@ -76,8 +76,8 @@
 	const outerEntries = $derived(
 		groups.flatMap((g) => {
 			const out: OuterEntry[] = [];
-			if (g.incomeTotal > 0) out.push({ value: g.incomeTotal, color: g.categoryColor, label: g.categoryName, type: 'incomes' });
-			if (g.expenseTotal > 0) out.push({ value: g.expenseTotal, color: g.categoryColor, label: g.categoryName, type: 'expenses' });
+			if (g.incomeTotal > 0) out.push({ value: g.incomeTotal, color: g.categoryColor, label: g.categoryName, type: 'income' });
+			if (g.expenseTotal > 0) out.push({ value: g.expenseTotal, color: g.categoryColor, label: g.categoryName, type: 'expense' });
 			return out;
 		})
 	);

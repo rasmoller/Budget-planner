@@ -38,5 +38,5 @@ All core features are built and working. The `charts-rework-plan.md` outlines a 
 ## Key Documents
 
 - **`docs/test-plan.md`** — test status and next steps (read this first)
+- **`docs/roadmap.md`** — project progress, upcoming features, and known gaps
 - **`docs/charts-rework-plan.md`** — planned charts page rework
-- **`TODO.md`** — feature backlog (MoSCoW)

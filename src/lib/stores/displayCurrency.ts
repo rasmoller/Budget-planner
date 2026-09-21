@@ -25,10 +25,6 @@ export function formatDisplay(
 	return formatCurrency(converted, dc);
 }
 
-export function displayCurrencyLabel(displayCurr: Currency | null, budgetCurrency: Currency): string {
-	return displayCurr ? displayCurr : `Auto (${budgetCurrency})`;
-}
-
 export function convertGroups(
 	groups: CategoryGroup[],
 	from: Currency,

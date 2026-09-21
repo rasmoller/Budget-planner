@@ -21,12 +21,11 @@ When starting a new session, always:
 
 ## Key Documents
 
-- `docs/roadmap.md` — project progress, upcoming features, known gaps
+- `docs/roadmap.md` — project progress, upcoming features, known gaps, cleanup backlog
 - `docs/project-plan.md` — overall project goal, features, and pages
 - `docs/test-plan.md` — test status and next steps
 - `docs/charts-rework-plan.md` — future charts page rework
 - `docs/development-flow.md` — git workflow for features, tests, and releases
-- `TODO.md` — feature backlog
 
 ## Priority Order
 

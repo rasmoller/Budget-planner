@@ -16,7 +16,3 @@ export function parseCurrency(value: string): number {
 	if (isNaN(num)) return 0;
 	return Math.round(num * 100);
 }
-
-export function formatDKK(amount: number): string {
-	return formatCurrency(amount, 'DKK');
-}

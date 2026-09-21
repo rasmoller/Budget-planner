@@ -17,6 +17,7 @@
 	let { children } = $props();
 
 	let isDarkMode = $state(false);
+	let themeTransitionTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
 	let currentPath = $derived(page.url.pathname);
 
@@ -49,14 +50,14 @@
 	const archivedBudgets = $derived($allBudgets.filter((b) => b.isArchived));
 
 	function toggleDarkMode() {
+		const root = document.documentElement;
+		const durationMs = parseFloat(getComputedStyle(root).getPropertyValue('--theme-transition-duration')) * 1000;
+		clearTimeout(themeTransitionTimer);
+		root.classList.add('theme-transitioning');
 		isDarkMode = !isDarkMode;
-		if (isDarkMode) {
-			document.documentElement.classList.add('dark');
-			localStorage.setItem('theme', 'dark');
-		} else {
-			document.documentElement.classList.remove('dark');
-			localStorage.setItem('theme', 'light');
-		}
+		root.classList.toggle('dark', isDarkMode);
+		localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+		themeTransitionTimer = setTimeout(() => root.classList.remove('theme-transitioning'), durationMs);
 	}
 
 	function switchLanguage(lang: Language) {

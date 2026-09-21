@@ -15,7 +15,6 @@ export const en = {
     duplicate: 'Duplicate',
     confirmDelete: 'Are you sure?',
     deleteBudgetWarning: 'All categories and items in the budget will also be deleted.',
-    validationError: 'Please fix the errors before saving',
     active: 'Active',
     inactive: 'Inactive',
     customColor: 'Custom color',
@@ -45,7 +44,6 @@ export const en = {
     frequency: 'Frequency',
     startDate: 'Start date',
     color: 'Color',
-    type: 'Type',
     currency: 'Currency',
     notes: 'Notes',
     date: 'Date',
@@ -57,17 +55,12 @@ export const en = {
     totalIncome: 'Income',
     totalExpenses: 'Expenses',
     income: 'Income',
-    incomes: 'Incomes',
-    expense: 'Expense',
-    expenses: 'Expenses'
+    expense: 'Expense'
   },
   budget: {
     createBudget: 'New budget',
-    deleteBudget: 'Delete budget',
     newBudgetPlaceholder: 'My Budget',
-    selectBudget: 'Select budget',
     allBudgets: 'All budgets',
-    duplicateBudget: 'Duplicate budget',
     renameBudget: 'Rename budget',
     name: 'Name',
     save: 'Save',
@@ -81,9 +74,6 @@ export const en = {
     exportJsonDetail: 'Save your budget as a JSON file',
     exportCSV: 'Export as CSV',
     exportCSVDetail: 'Save your budget as a CSV file',
-    importJson: 'Import from JSON',
-    exportSuccess: 'Budget exported!',
-    importSuccess: 'Budget imported!',
     importError: 'Invalid file',
     csvHeader: 'Name;Amount;Currency;Type;Category;Frequency;Start date;Active;One-time;Date;Variable;Min;Max',
     csvYes: 'Yes',
@@ -129,15 +119,9 @@ export const en = {
     hint: 'Schedule changes in advance, e.g. a salary change or stopping an item',
     effectiveDate: 'Effective date',
     newAmount: 'New amount',
-    newStatus: 'New status',
     keep: 'Keep current',
     add: 'Add future change',
     remove: 'Remove'
-  },
-  chart: {
-    totalPerMonth: 'total / month',
-    innerRing: 'Inner: Category',
-    outerRing: 'Outer: Income / Expense'
   },
   frequency: {
     daily: 'Daily',
@@ -162,17 +146,12 @@ export const en = {
   overview: {
     yearView: 'Year view',
     monthView: 'Month view',
-    selectYear: 'Select year',
-    selectMonth: 'Select month',
-    expand: 'Show',
-    collapse: 'Hide',
     incomeShort: 'I',
     expenseShort: 'E'
   },
   validation: {
     nameRequired: 'Name is required',
     nameTooLong: 'Name must be at most 100 characters',
-    amountInvalid: 'Amount must be 0 or a positive number',
-    required: 'is required'
+    amountInvalid: 'Amount must be 0 or a positive number'
   }
 };
